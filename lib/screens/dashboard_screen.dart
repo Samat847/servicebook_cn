@@ -97,13 +97,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             centerTitle: true,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.notifications_outlined),
-                onPressed: () {},
-                color: Colors.black,
-              ),
-            ],
           ),
 
           // Основной контент

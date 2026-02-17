@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'expense_detail_analytics_screen.dart';
+import 'all_operations_screen.dart';
 
 class ExpenseAnalyticsScreen extends StatelessWidget {
   final Map<String, dynamic> car;
@@ -135,7 +137,15 @@ class ExpenseAnalyticsScreen extends StatelessWidget {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {},
+                    key: const Key('analytics_details_button'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ExpenseDetailAnalyticsScreen(car: car),
+                        ),
+                      );
+                    },
                     child: const Text('Детали'),
                   ),
                 ],
@@ -216,7 +226,15 @@ class ExpenseAnalyticsScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Center(
               child: TextButton(
-                onPressed: () {},
+                key: const Key('show_all_operations_button'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AllOperationsScreen(),
+                    ),
+                  );
+                },
                 child: const Text('Показать все операции'),
               ),
             ),
