@@ -5,8 +5,18 @@ import 'add_car_screen.dart';
 import 'driver_license_screen.dart';
 import 'insurance_screen.dart';
 import 'documents_screen.dart';
-import 'settings_screen.dart';
+import 'sts_detail_screen.dart';
+import 'all_documents_screen.dart';
+import 'profile_edit_screen.dart';
+import 'security_settings_screen.dart';
+import 'language_settings_screen.dart';
+import 'data_management_screen.dart';
+import 'backup_settings_screen.dart';
+import 'help_and_faq_screen.dart';
 import 'support_screen.dart';
+import 'privacy_policy_screen.dart';
+import 'terms_of_service_screen.dart';
+import 'about_screen.dart';
 import '../services/car_storage.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -223,7 +233,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           ),
                         ),
                         TextButton(
-                          onPressed: () {},
+                          key: const Key('view_all_documents_button'),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AllDocumentsScreen(),
+                              ),
+                            );
+                          },
                           child: const Text('Все'),
                         ),
                       ],
@@ -237,6 +255,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       _buildDocumentTile(
+                        key: const Key('driver_license_tile'),
                         icon: Icons.assignment_ind,
                         title: 'Водительское удостоверение',
                         subtitle: 'Действительно до 2028',
@@ -250,6 +269,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         },
                       ),
                       _buildDocumentTile(
+                        key: const Key('insurance_tile'),
                         icon: Icons.car_crash,
                         title: 'ОСАГО',
                         subtitle: 'Действует',
@@ -263,6 +283,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         },
                       ),
                       _buildDocumentTile(
+                        key: const Key('sts_tile'),
                         icon: Icons.description,
                         title: 'СТС',
                         subtitle: 'Бессрочно',
@@ -270,7 +291,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const DocumentsScreen(),
+                              builder: (context) => const STSDetailScreen(),
                             ),
                           );
                         },
@@ -304,41 +325,87 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       _buildSettingsTile(
+                        key: const Key('personal_data_tile'),
                         icon: Icons.person_outline,
                         title: 'Личные данные',
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const SettingsScreen(),
+                              builder: (context) => const ProfileEditScreen(),
                             ),
                           );
                         },
                       ),
                       _buildSettingsTile(
-                        icon: Icons.credit_card,
-                        title: 'Способы оплаты',
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('В разработке')),
-                          );
-                        },
-                      ),
-                      _buildSettingsTile(
-                        icon: Icons.settings_outlined,
-                        title: 'Настройки приложения',
+                        key: const Key('security_tile'),
+                        icon: Icons.lock_outline,
+                        title: 'Безопасность',
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const SettingsScreen(),
+                              builder: (context) => const SecuritySettingsScreen(),
                             ),
                           );
                         },
                       ),
                       _buildSettingsTile(
+                        key: const Key('language_tile'),
+                        icon: Icons.language,
+                        title: 'Язык',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LanguageSettingsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildSettingsTile(
+                        key: const Key('data_management_tile'),
+                        icon: Icons.storage,
+                        title: 'Управление данными',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const DataManagementScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildSettingsTile(
+                        key: const Key('backup_tile'),
+                        icon: Icons.cloud_upload,
+                        title: 'Резервные копии',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const BackupSettingsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildSettingsTile(
+                        key: const Key('help_tile'),
                         icon: Icons.help_outline,
-                        title: 'Помощь и поддержка',
+                        title: 'Помощь и FAQ',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const HelpAndFaqScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildSettingsTile(
+                        key: const Key('contact_support_tile'),
+                        icon: Icons.support_agent,
+                        title: 'Связаться с поддержкой',
                         onTap: () {
                           Navigator.push(
                             context,
@@ -348,8 +415,59 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           );
                         },
                       ),
+                      _buildSettingsTile(
+                        key: const Key('rate_app_tile'),
+                        icon: Icons.star_outline,
+                        title: 'Оценить приложение',
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Открываем магазин приложений...')),
+                          );
+                        },
+                      ),
                       const Divider(height: 30),
                       _buildSettingsTile(
+                        key: const Key('privacy_policy_tile'),
+                        icon: Icons.privacy_tip,
+                        title: 'Политика конфиденциальности',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PrivacyPolicyScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildSettingsTile(
+                        key: const Key('terms_tile'),
+                        icon: Icons.description_outlined,
+                        title: 'Условия использования',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const TermsOfServiceScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildSettingsTile(
+                        key: const Key('about_tile'),
+                        icon: Icons.info_outline,
+                        title: 'О приложении',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AboutScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      const Divider(height: 30),
+                      _buildSettingsTile(
+                        key: const Key('logout_tile'),
                         icon: Icons.logout,
                         title: 'Выйти',
                         onTap: _logout,
@@ -489,12 +607,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Widget _buildDocumentTile({
+    Key? key,
     required IconData icon,
     required String title,
     required String subtitle,
     VoidCallback? onTap,
   }) {
     return Card(
+      key: key,
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 1,
       shape: RoundedRectangleBorder(
@@ -523,12 +643,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Widget _buildSettingsTile({
+    Key? key,
     required IconData icon,
     required String title,
     required VoidCallback onTap,
     Color color = Colors.black,
   }) {
     return ListTile(
+      key: key,
       leading: Icon(icon, color: color == Colors.black ? Colors.blue : color),
       title: Text(
         title,
