@@ -266,6 +266,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: GestureDetector(
+                key: const Key('service_history_button'),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -336,6 +337,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
             const SizedBox(height: 8),
             Center(
               child: TextButton(
+                key: const Key('all_records_button'),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -447,6 +449,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                     ),
                   ),
                   TextButton.icon(
+                    key: const Key('analytics_details_button'),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -656,6 +659,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
+                          key: const Key('sell_report_button'),
                           onPressed: () {
                             Navigator.push(
                               context,

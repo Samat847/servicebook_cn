@@ -302,6 +302,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _buildQuickAction(
+                      key: const Key('add_service_button'),
                       icon: Icons.add_circle_outline,
                       label: 'Добавить запись',
                       color: Colors.blue,
@@ -315,6 +316,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       },
                     ),
                     _buildQuickAction(
+                      key: const Key('sell_report_button'),
                       icon: Icons.description_outlined,
                       label: 'Отчет для продажи',
                       color: Colors.green,
@@ -328,6 +330,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       },
                     ),
                     _buildQuickAction(
+                      key: const Key('partners_button'),
                       icon: Icons.car_repair_outlined,
                       label: 'Партнеры СТО',
                       color: Colors.orange,
@@ -341,6 +344,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       },
                     ),
                     _buildQuickAction(
+                      key: const Key('analytics_button'),
                       icon: Icons.insights_outlined,
                       label: 'Аналитика',
                       color: Colors.purple,
@@ -620,6 +624,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildQuickAction({
+    Key? key,
     required IconData icon,
     required String label,
     required Color color,
@@ -627,6 +632,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }) {
     return Expanded(
       child: GestureDetector(
+        key: key,
         onTap: onTap,
         child: Column(
           mainAxisSize: MainAxisSize.min,

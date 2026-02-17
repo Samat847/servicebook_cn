@@ -196,6 +196,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           ),
                         ),
                         TextButton.icon(
+                          key: const Key('add_car_button'),
                           onPressed: _navigateToAddCar,
                           icon: const Icon(Icons.add_circle_outline, size: 20),
                           label: const Text('Добавить'),

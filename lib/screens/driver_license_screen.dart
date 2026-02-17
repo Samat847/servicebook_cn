@@ -300,6 +300,7 @@ class _DriverLicenseScreenState extends State<DriverLicenseScreen> {
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
+                        key: const Key('save_driver_license_button'),
                         onPressed: _saveLicense,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1E88E5),
@@ -324,6 +325,7 @@ class _DriverLicenseScreenState extends State<DriverLicenseScreen> {
                   // Отмена
                   Center(
                     child: TextButton(
+                      key: const Key('cancel_driver_license_button'),
                       onPressed: () => Navigator.pop(context),
                       child: const Text(
                         'Отмена',
