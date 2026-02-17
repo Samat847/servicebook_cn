@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'add_service_screen.dart';
 import 'sell_report_screen.dart';
-import 'partners_screen.dart'; // ← добавлен импорт
+import 'partners_screen.dart';
+import 'expense_analytics_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -350,7 +351,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       label: 'Аналитика',
                       color: Colors.purple,
                       onTap: () {
-                        // TODO: переход на аналитику
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ExpenseAnalyticsScreen(car: _selectedCar),
+                          ),
+                        );
                       },
                     ),
                   ],

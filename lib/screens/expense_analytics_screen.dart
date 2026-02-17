@@ -172,9 +172,9 @@ class ExpenseAnalyticsScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // История операций
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: const Text(
                 'История операций',
                 style: TextStyle(
                   fontSize: 18,
