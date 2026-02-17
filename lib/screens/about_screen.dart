@@ -139,7 +139,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                   const SizedBox(height: 12),
                   _buildInfoCard(
-                    icon: Icons.license,
+                    icon: Icons.card_membership,
                     title: 'Лицензия',
                     content: 'Проприетарное программное обеспечение.\nИспользование регулируется Условиями использования.',
                   ),
