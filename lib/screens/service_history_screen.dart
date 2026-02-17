@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'sell_report_screen.dart';
 
 class ServiceHistoryScreen extends StatelessWidget {
   final Map<String, dynamic> car;
@@ -161,7 +162,12 @@ class ServiceHistoryScreen extends StatelessWidget {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          // TODO: формирование PDF
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SellReportScreen(car: car),
+                            ),
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1E88E5),

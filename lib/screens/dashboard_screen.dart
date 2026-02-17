@@ -3,6 +3,7 @@ import 'add_service_screen.dart';
 import 'sell_report_screen.dart';
 import 'partners_screen.dart';
 import 'expense_analytics_screen.dart';
+import 'AllRecordsScreen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -378,7 +379,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AllRecordsScreen(),
+                          ),
+                        );
+                      },
                       child: const Text(
                         'Все',
                         style: TextStyle(
@@ -458,7 +466,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: 8),
               Center(
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AllRecordsScreen(),
+                      ),
+                    );
+                  },
                   child: const Text('Все записи'),
                 ),
               ),

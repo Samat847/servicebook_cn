@@ -224,7 +224,11 @@ class _PartnersScreenState extends State<PartnersScreen> {
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Подбор запчастей в разработке')),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
@@ -367,7 +371,9 @@ class _PartnersScreenState extends State<PartnersScreen> {
                     style: TextStyle(fontSize: 14, color: Colors.green.shade700),
                   ),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _showBookingDialog(p);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
@@ -383,7 +389,11 @@ class _PartnersScreenState extends State<PartnersScreen> {
             ] else ...[
               const SizedBox(height: 12),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Каталог запчастей в разработке')),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
                   foregroundColor: Colors.white,
@@ -397,6 +407,54 @@ class _PartnersScreenState extends State<PartnersScreen> {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  void _showBookingDialog(Map<String, dynamic> partner) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Запись на сервис'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              partner['name'],
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              partner['address'],
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Выбранное время: ${partner['slot']}',
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Отмена'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Вы записаны на ${partner['slot']}')),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Подтвердить'),
+          ),
+        ],
       ),
     );
   }
