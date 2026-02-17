@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'service_history_screen.dart';
 import 'expense_analytics_screen.dart';
-import 'sell_report_screen.dart'; // ← импорт нового экрана
+import 'sell_report_screen.dart';
+import 'insurance_screen.dart';
+import 'documents_screen.dart';
 
 class CarDetailScreen extends StatefulWidget {
   final Map<String, dynamic> car;
@@ -419,7 +421,14 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                     size: 16,
                     color: Colors.grey.shade400,
                   ),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const DocumentsScreen(),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -561,7 +570,14 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const InsuranceScreen(),
+                                    ),
+                                  );
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
                                   foregroundColor: Colors.white,

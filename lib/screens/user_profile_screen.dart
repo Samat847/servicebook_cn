@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'auth_screen.dart';
 import 'home_screen.dart';
 import 'add_car_screen.dart';
+import 'driver_license_screen.dart';
+import 'insurance_screen.dart';
+import 'documents_screen.dart';
+import 'settings_screen.dart';
+import 'support_screen.dart';
 import '../services/car_storage.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -235,16 +240,40 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         icon: Icons.assignment_ind,
                         title: 'Водительское удостоверение',
                         subtitle: 'Действительно до 2028',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const DriverLicenseScreen(),
+                            ),
+                          );
+                        },
                       ),
                       _buildDocumentTile(
                         icon: Icons.car_crash,
                         title: 'ОСАГО',
                         subtitle: 'Действует',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const InsuranceScreen(),
+                            ),
+                          );
+                        },
                       ),
                       _buildDocumentTile(
                         icon: Icons.description,
                         title: 'СТС',
                         subtitle: 'Бессрочно',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const DocumentsScreen(),
+                            ),
+                          );
+                        },
                       ),
                     ]),
                   ),
@@ -277,22 +306,47 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       _buildSettingsTile(
                         icon: Icons.person_outline,
                         title: 'Личные данные',
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SettingsScreen(),
+                            ),
+                          );
+                        },
                       ),
                       _buildSettingsTile(
                         icon: Icons.credit_card,
                         title: 'Способы оплаты',
-                        onTap: () {},
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('В разработке')),
+                          );
+                        },
                       ),
                       _buildSettingsTile(
                         icon: Icons.settings_outlined,
                         title: 'Настройки приложения',
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SettingsScreen(),
+                            ),
+                          );
+                        },
                       ),
                       _buildSettingsTile(
                         icon: Icons.help_outline,
                         title: 'Помощь и поддержка',
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SupportScreen(),
+                            ),
+                          );
+                        },
                       ),
                       const Divider(height: 30),
                       _buildSettingsTile(
@@ -438,6 +492,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     required IconData icon,
     required String title,
     required String subtitle,
+    VoidCallback? onTap,
   }) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -462,7 +517,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           size: 16,
           color: Colors.grey.shade400,
         ),
-        onTap: () {},
+        onTap: onTap,
       ),
     );
   }

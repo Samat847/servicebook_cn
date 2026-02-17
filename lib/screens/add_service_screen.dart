@@ -348,10 +348,13 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                     child: IconButton(
                       icon: const Icon(Icons.add_a_photo, color: Colors.grey),
                       onPressed: () {
-                        // TODO: добавить фото
+                        // TODO: Implement actual photo picker
                         setState(() {
                           _hasReceiptPhoto = true;
                         });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Фото добавлено')),
+                        );
                       },
                     ),
                   ),
@@ -460,7 +463,24 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: сохранить запись
+                    if (_selectedWorkTypes.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Выберите тип работы')),
+                      );
+                      return;
+                    }
+
+                    if (_mileageController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Введите пробег')),
+                      );
+                      return;
+                    }
+
+                    // TODO: Save to storage
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Запись сохранена')),
+                    );
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
