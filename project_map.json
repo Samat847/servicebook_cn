@@ -1,0 +1,126 @@
+{
+  "projectName": "servicebook_cn",
+  "rootPath": "D:\\Dev\\servicebook_cn",
+  "language": "javascript",
+  "filesAnalyzed": 2,
+  "features": [
+    {
+      "name": "android",
+      "description": "Feature: android",
+      "functions": [],
+      "files": [
+        "D:\\Dev\\servicebook_cn\\android\\app\\src\\main\\java\\io\\flutter\\plugins\\GeneratedPluginRegistrant.java"
+      ],
+      "dependencies": []
+    },
+    {
+      "name": "ios",
+      "description": "Feature: ios",
+      "functions": [],
+      "files": [
+        "D:\\Dev\\servicebook_cn\\ios\\Flutter\\ephemeral\\flutter_lldb_helper.py"
+      ],
+      "dependencies": []
+    }
+  ],
+  "allFunctions": [],
+  "allClasses": [],
+  "dependencies": {
+    "nodes": {},
+    "edges": []
+  },
+  "searchIndex": {
+    "functions": {},
+    "classes": {},
+    "files": {
+      "D:\\Dev\\servicebook_cn\\android\\app\\src\\main\\java\\io\\flutter\\plugins\\GeneratedPluginRegistrant.java": {
+        "path": "D:\\Dev\\servicebook_cn\\android\\app\\src\\main\\java\\io\\flutter\\plugins\\GeneratedPluginRegistrant.java",
+        "language": "javascript",
+        "functions": [],
+        "classes": [],
+        "imports": [],
+        "exports": []
+      },
+      "D:\\Dev\\servicebook_cn\\ios\\Flutter\\ephemeral\\flutter_lldb_helper.py": {
+        "path": "D:\\Dev\\servicebook_cn\\ios\\Flutter\\ephemeral\\flutter_lldb_helper.py",
+        "language": "javascript",
+        "functions": [],
+        "classes": [],
+        "imports": [],
+        "exports": []
+      }
+    },
+    "keywords": {}
+  },
+  "quality": {
+    "totalFunctions": 0,
+    "functionsWithDocstring": 0,
+    "functionsWithErrorHandling": 0,
+    "todoCount": 0,
+    "fixmeCount": 0,
+    "issues": [],
+    "recommendations": [
+      "⚠️ Only 0% of functions have documentation. Target: 80%+",
+      "⚠️ Only 0% of functions have error handling. Consider adding try-catch blocks"
+    ]
+  },
+  "passport": {
+    "projectName": "Unknown Project",
+    "summary": "Unknown Project - 2 features, 0 functions, 2 files",
+    "language": "javascript",
+    "filesAnalyzed": 2,
+    "architecture": {
+      "mainModules": [
+        "GeneratedPluginRegistrant.java",
+        "flutter_lldb_helper.py"
+      ],
+      "entryPoints": [],
+      "layerStructure": {
+        "main": [
+          "GeneratedPluginRegistrant.java"
+        ]
+      },
+      "dependencies": {}
+    },
+    "criticalFunctions": [],
+    "keyModules": [
+      {
+        "type": "module",
+        "name": "GeneratedPluginRegistrant.java",
+        "description": "Module with 0 functions and 0 classes",
+        "location": "D:\\Dev\\servicebook_cn\\android\\app\\src\\main\\java\\io\\flutter\\plugins\\GeneratedPluginRegistrant.java",
+        "dependencies": [],
+        "importance": "medium"
+      },
+      {
+        "type": "module",
+        "name": "flutter_lldb_helper.py",
+        "description": "Module with 0 functions and 0 classes",
+        "location": "D:\\Dev\\servicebook_cn\\ios\\Flutter\\ephemeral\\flutter_lldb_helper.py",
+        "dependencies": [],
+        "importance": "medium"
+      }
+    ],
+    "warnings": [],
+    "tips": [
+      "📌 Start with entry points: index.js/main.js",
+      "📦 Main modules: GeneratedPluginRegistrant.java, flutter_lldb_helper.py",
+      "🔍 Total functions: 0, Classes: 0",
+      "✅ Error handling coverage: NaN%"
+    ]
+  },
+  "dataCatalog": {
+    "totalEntities": 1,
+    "entities": [
+      {
+        "name": "GeneratedPluginRegistrant",
+        "type": "class",
+        "fields": {},
+        "location": "D:\\Dev\\servicebook_cn\\android\\app\\src\\main\\java\\io\\flutter\\plugins\\GeneratedPluginRegistrant.java",
+        "file": "GeneratedPluginRegistrant.java",
+        "usedIn": [],
+        "line": 15
+      }
+    ]
+  }
+}
