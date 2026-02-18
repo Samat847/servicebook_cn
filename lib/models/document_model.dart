@@ -191,8 +191,8 @@ class DriverLicense extends Document {
     required this.categories,
     this.frontPhotoPath,
     this.backPhotoPath,
-    super.createdAt,
-    super.updatedAt,
+    required super.createdAt,
+    required super.updatedAt,
   }) : super(
     type: DocumentType.driverLicense,
     additionalData: {
@@ -235,8 +235,8 @@ class InsurancePolicy extends Document {
     super.status,
     this.company,
     this.amount,
-    super.createdAt,
-    super.updatedAt,
+    required super.createdAt,
+    required super.updatedAt,
   }) : super(
     type: DocumentType.osago,
     organization: company,
