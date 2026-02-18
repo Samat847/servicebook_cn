@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../models/models.dart';
 
 class ExpenseDetailAnalyticsScreen extends StatefulWidget {
-  final Map<String, dynamic> car;
+  final Car car;
 
   const ExpenseDetailAnalyticsScreen({super.key, required this.car});
 

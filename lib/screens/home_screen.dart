@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import '../models/models.dart';
+import '../services/car_storage.dart';
 import 'add_car_screen.dart';
 import 'auth_screen.dart';
-import 'car_detail_screen.dart'; // ← добавлен импорт
-import '../services/car_storage.dart';
+import 'car_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,9 +13,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Map<String, dynamic>> _cars = [];
+  List<Car> _cars = [];
   bool _isLoading = true;
-  
+  String? _errorMessage;
+
   static const Color primaryColor = Color(0xFF1E88E5);
   static const Color backgroundColor = Color(0xFFF5F5F5);
   static const Color cardColor = Color(0xFFFFFFFF);
@@ -28,11 +30,23 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadCars() async {
-    final cars = await CarStorage.loadCars();
     setState(() {
-      _cars = cars;
-      _isLoading = false;
+      _isLoading = true;
+      _errorMessage = null;
     });
+
+    try {
+      final cars = await CarStorage.loadCarsList();
+      setState(() {
+        _cars = cars;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Ошибка загрузки данных: $e';
+      });
+    }
   }
 
   Future<void> _navigateToAddCar() async {
@@ -42,31 +56,61 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context) => const AddCarScreen(),
       ),
     );
-    
-    if (newCar != null) {
+
+    if (newCar != null && newCar is Car) {
       setState(() {
         _cars.add(newCar);
       });
-      
-      await CarStorage.saveCars(_cars);
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${newCar['brand']} ${newCar['model']} добавлен!'),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+
+      await CarStorage.saveCar(newCar);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${newCar.brand} ${newCar.model} добавлен!'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteCar(String carId) async {
+    try {
+      await CarStorage.deleteCar(carId);
+      setState(() {
+        _cars.removeWhere((c) => c.id == carId);
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Автомобиль удален'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Ошибка удаления: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _logout() async {
     await CarStorage.saveAuthStatus(false);
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const AuthScreen()),
-      (route) => false,
-    );
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const AuthScreen()),
+        (route) => false,
+      );
+    }
   }
 
   Widget _buildEmptyState() {
@@ -96,9 +140,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.grey[300],
               ),
             ),
-            
+
             const SizedBox(height: 32),
-            
+
             const Text(
               'Пока нет автомобилей',
               style: TextStyle(
@@ -107,9 +151,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: textColor,
               ),
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             const Text(
               'Добавьте свой первый автомобиль\nдля начала ведения истории обслуживания',
               textAlign: TextAlign.center,
@@ -119,9 +163,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 1.5,
               ),
             ),
-            
+
             const SizedBox(height: 40),
-            
+
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -159,176 +203,275 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCarsList() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Text(
-              'Автомобили (${_cars.length})',
-              style: const TextStyle(
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Colors.red[300],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: secondaryTextColor,
+                color: Colors.red[700],
               ),
             ),
-          ),
-          
-          const SizedBox(height: 8),
-          
-          Expanded(
-            child: ListView.separated(
-              itemCount: _cars.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final car = _cars[index];
-                return _buildCarCard(car);
-              },
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _loadCars,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Повторить'),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildCarCard(Map<String, dynamic> car) {
-    return GestureDetector(
-      onTap: () {
-        // Переход на экран деталей автомобиля
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CarDetailScreen(car: car),
-          ),
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.08),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
+  Widget _buildCarsList() {
+    return RefreshIndicator(
+      onRefresh: _loadCars,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 80,
-              height: 80,
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.directions_car,
-                size: 36,
-                color: primaryColor,
-              ),
-            ),
-            
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${car['brand']} ${car['model']}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: textColor,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    
-                    const SizedBox(height: 6),
-                    
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today,
-                          size: 14,
-                          color: secondaryTextColor,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${car['year']} год',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: secondaryTextColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 4),
-                    
-                    if (car['vin'] != null && car['vin'].isNotEmpty)
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.confirmation_number,
-                            size: 14,
-                            color: secondaryTextColor,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            car['vin'],
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: secondaryTextColor,
-                              fontFamily: 'monospace',
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    
-                    if (car['plate'] != null && car['plate'].isNotEmpty)
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.numbers,
-                            size: 14,
-                            color: secondaryTextColor,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            car['plate'],
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: secondaryTextColor,
-                              fontWeight: FontWeight.w500,
-                              fontFamily: 'monospace',
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: Text(
+                'Автомобили (${_cars.length})',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: secondaryTextColor,
                 ),
               ),
             ),
-            
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: secondaryTextColor.withOpacity(0.5),
+
+            const SizedBox(height: 8),
+
+            Expanded(
+              child: ListView.separated(
+                itemCount: _cars.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final car = _cars[index];
+                  return _buildCarCard(car);
+                },
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCarCard(Car car) {
+    return Dismissible(
+      key: Key(car.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Icon(Icons.delete, color: Colors.white),
+      ),
+      confirmDismiss: (direction) async {
+        return await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Удалить автомобиль?'),
+            content: Text('Вы уверены, что хотите удалить ${car.displayName}?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Отмена'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Удалить'),
+              ),
+            ],
+          ),
+        );
+      },
+      onDismissed: (direction) => _deleteCar(car.id),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CarDetailScreen(car: car),
+            ),
+          ).then((_) => _loadCars());
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                margin: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.directions_car,
+                  size: 36,
+                  color: primaryColor,
+                ),
+              ),
+
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        car.displayName,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: textColor,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+
+                      const SizedBox(height: 6),
+
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            size: 14,
+                            color: secondaryTextColor,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${car.year} год',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: secondaryTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      if (car.vin != null && car.vin!.isNotEmpty)
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.confirmation_number,
+                              size: 14,
+                              color: secondaryTextColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                car.vin!,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: secondaryTextColor,
+                                  fontFamily: 'monospace',
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                      if (car.plate != null && car.plate!.isNotEmpty)
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.numbers,
+                              size: 14,
+                              color: secondaryTextColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              car.plate!,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: secondaryTextColor,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                          ],
+                        ),
+
+                      if (car.mileage != null) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.speed,
+                              size: 14,
+                              color: primaryColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${car.mileage!.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]} ')} км',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: secondaryTextColor.withOpacity(0.5),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -336,6 +479,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Widget body;
+    if (_isLoading) {
+      body = _buildLoadingState();
+    } else if (_errorMessage != null) {
+      body = _buildErrorState();
+    } else if (_cars.isEmpty) {
+      body = _buildEmptyState();
+    } else {
+      body = _buildCarsList();
+    }
+
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -370,17 +524,17 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: _isLoading 
-          ? _buildLoadingState() 
-          : (_cars.isEmpty ? _buildEmptyState() : _buildCarsList()),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToAddCar,
-        backgroundColor: primaryColor,
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
+      body: body,
+      floatingActionButton: !_isLoading && _errorMessage == null
+          ? FloatingActionButton(
+              onPressed: _navigateToAddCar,
+              backgroundColor: primaryColor,
+              child: const Icon(Icons.add, color: Colors.white, size: 28),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            )
+          : null,
     );
   }
 }
