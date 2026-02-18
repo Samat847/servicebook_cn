@@ -399,7 +399,7 @@ class _ExpenseAnalyticsScreenState extends State<ExpenseAnalyticsScreen> {
                     ),
                   ),
                   FractionallySizedBox(
-                    widthFactor: percent,
+                    widthFactor: percent.toDouble(),
                     child: Container(
                       height: 8,
                       decoration: BoxDecoration(

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../models/models.dart';
 
 class PartnersScreen extends StatefulWidget {
-  final Map<String, dynamic>? car;
+  final Car? car;
 
   const PartnersScreen({super.key, this.car});
 
