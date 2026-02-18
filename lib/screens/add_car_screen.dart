@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/models.dart';
 
 class AddCarScreen extends StatefulWidget {
   const AddCarScreen({super.key});
@@ -9,7 +10,7 @@ class AddCarScreen extends StatefulWidget {
 
 class _AddCarScreenState extends State<AddCarScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   // Списки марок и моделей
   final Map<String, List<String>> _brandModels = {
     'Chery': [
@@ -111,6 +112,7 @@ class _AddCarScreenState extends State<AddCarScreen> {
   String? _selectedYear;
   String _vin = '';
   String _plate = '';
+  String _mileage = '';
 
   // Годы выпуска (от 2000 до текущий год + 1)
   List<String> get _years {
@@ -148,7 +150,7 @@ class _AddCarScreenState extends State<AddCarScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 10),
-              
+
               // Заголовок
               const Text(
                 'Добавьте авто',
@@ -157,9 +159,9 @@ class _AddCarScreenState extends State<AddCarScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              
+
               const SizedBox(height: 8),
-              
+
               const Text(
                 'Укажите основные данные вашего автомобиля для начала работы.',
                 style: TextStyle(
@@ -167,9 +169,9 @@ class _AddCarScreenState extends State<AddCarScreen> {
                   color: Colors.grey,
                 ),
               ),
-              
+
               const SizedBox(height: 30),
-              
+
               // Марка автомобиля
               const Text(
                 'Марка',
@@ -209,9 +211,9 @@ class _AddCarScreenState extends State<AddCarScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Модель автомобиля
               const Text(
                 'Модель',
@@ -241,9 +243,10 @@ class _AddCarScreenState extends State<AddCarScreen> {
                         _selectedModel = newValue;
                       });
                     },
-                    items: (_selectedBrand != null 
-                        ? _brandModels[_selectedBrand] 
-                        : <String>[])?.map<DropdownMenuItem<String>>((String model) {
+                    items: (_selectedBrand != null
+                            ? _brandModels[_selectedBrand]
+                            : <String>[])
+                        ?.map<DropdownMenuItem<String>>((String model) {
                       return DropdownMenuItem<String>(
                         value: model,
                         child: Text(model),
@@ -252,9 +255,9 @@ class _AddCarScreenState extends State<AddCarScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Год выпуска
               const Text(
                 'Год выпуска',
@@ -293,9 +296,9 @@ class _AddCarScreenState extends State<AddCarScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // VIN номер
               const Text(
                 'VIN',
@@ -336,9 +339,9 @@ class _AddCarScreenState extends State<AddCarScreen> {
                 },
                 textCapitalization: TextCapitalization.characters,
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Госномер
               const Text(
                 'Госномер',
@@ -371,9 +374,50 @@ class _AddCarScreenState extends State<AddCarScreen> {
                 },
                 textCapitalization: TextCapitalization.characters,
               ),
-              
+
+              const SizedBox(height: 20),
+
+              // Пробег
+              const Text(
+                'Пробег',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 5),
+              const Text(
+                'Опционально',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  hintText: 'Например: 15000',
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  suffixText: 'км',
+                  suffixStyle: TextStyle(color: Colors.grey.shade600),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _mileage = value;
+                  });
+                },
+              ),
+
               const SizedBox(height: 16),
-              
+
               // UX-подсказка
               Container(
                 padding: const EdgeInsets.all(12),
@@ -388,7 +432,7 @@ class _AddCarScreenState extends State<AddCarScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'VIN или госномер помогут точнее подобрать детали, но их можно добавить позже.',
+                        'VIN, госномер и пробег помогут точнее подобрать детали, но их можно добавить позже.',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.blue[700],
@@ -398,9 +442,9 @@ class _AddCarScreenState extends State<AddCarScreen> {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 40),
-              
+
               // Кнопка сохранения
               SizedBox(
                 width: double.infinity,
@@ -423,7 +467,7 @@ class _AddCarScreenState extends State<AddCarScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 10),
             ],
           ),
@@ -442,23 +486,22 @@ class _AddCarScreenState extends State<AddCarScreen> {
       );
       return;
     }
-    
+
     // Создаем объект автомобиля
-    final newCar = {
-      'brand': _selectedBrand!,
-      'model': _selectedModel!,
-      'year': _selectedYear!,
-      'vin': _vin,
-      'plate': _plate,
-      'addedDate': DateTime.now().toString(),
-    };
-    
-    // TODO: Здесь будет сохранение в базу данных
-    print('Добавлен автомобиль: $newCar');
-    
+    final newCar = Car(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      brand: _selectedBrand!,
+      model: _selectedModel!,
+      year: _selectedYear!,
+      vin: _vin.isNotEmpty ? _vin : null,
+      plate: _plate.isNotEmpty ? _plate : null,
+      addedDate: DateTime.now(),
+      mileage: _mileage.isNotEmpty ? int.tryParse(_mileage.replaceAll(RegExp(r'\D'), '')) : null,
+    );
+
     // Возвращаемся на главный экран и передаем новый автомобиль
-    Navigator.pop(context, newCar); // ИЗМЕНЕНИЕ ЗДЕСЬ
-    
+    Navigator.pop(context, newCar);
+
     // Показываем сообщение об успехе
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

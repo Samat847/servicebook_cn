@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/models.dart';
 import '../services/car_storage.dart';
 
 class ProfileEditScreen extends StatefulWidget {
@@ -14,6 +15,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final _phoneController = TextEditingController();
   final _cityController = TextEditingController();
   bool _isLoading = false;
+  String? _errorMessage;
   String? _photoPath;
 
   @override
@@ -23,11 +25,23 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   Future<void> _loadProfile() async {
-    final profile = await CarStorage.loadProfile();
-    setState(() {
-      _nameController.text = profile['name'] ?? '';
-      _cityController.text = profile['city'] ?? '';
-    });
+    setState(() => _isLoading = true);
+    try {
+      final profile = await CarStorage.loadUserProfile();
+      setState(() {
+        _nameController.text = profile.name;
+        _emailController.text = profile.email ?? '';
+        _phoneController.text = profile.phone ?? '';
+        _cityController.text = profile.city;
+        _photoPath = profile.photoPath;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Ошибка загрузки профиля: $e';
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -40,7 +54,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   Future<void> _pickPhoto() async {
-    // TODO: Implement actual photo picker
     setState(() {
       _photoPath = 'photo_path';
     });
@@ -54,20 +67,51 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       return;
     }
 
+    if (_cityController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Введите город')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
-    await CarStorage.saveProfile(
-      name: _nameController.text,
-      city: _cityController.text,
-    );
-
-    setState(() => _isLoading = false);
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Профиль сохранен')),
+    try {
+      final profile = UserProfile(
+        name: _nameController.text.trim(),
+        city: _cityController.text.trim(),
+        email: _emailController.text.trim().isNotEmpty ? _emailController.text.trim() : null,
+        phone: _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null,
+        photoPath: _photoPath,
+        updatedAt: DateTime.now(),
       );
-      Navigator.pop(context);
+
+      await CarStorage.saveUserProfile(profile);
+
+      setState(() => _isLoading = false);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Профиль сохранен'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Ошибка сохранения: $e';
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Ошибка сохранения: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -89,12 +133,35 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         ),
         centerTitle: true,
       ),
-      body: _isLoading
+      body: _isLoading && _nameController.text.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               child: Column(
                 children: [
                   const SizedBox(height: 24),
+
+                  if (_errorMessage != null)
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, bottom: 16),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.error_outline, color: Colors.red.shade700),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: TextStyle(color: Colors.red.shade700),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
                   // Photo upload
                   Center(
@@ -175,7 +242,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       children: [
                         _buildTextField(
                           controller: _nameController,
-                          label: 'Имя',
+                          label: 'Имя *',
                           hint: 'Введите ваше имя',
                           icon: Icons.person,
                         ),
@@ -198,7 +265,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         const SizedBox(height: 16),
                         _buildTextField(
                           controller: _cityController,
-                          label: 'Город',
+                          label: 'Город *',
                           hint: 'Москва',
                           icon: Icons.location_city,
                         ),
@@ -213,7 +280,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _saveProfile,
+                        onPressed: _isLoading ? null : _saveProfile,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1E88E5),
                           foregroundColor: Colors.white,
@@ -222,13 +289,22 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          'Сохранить',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Сохранить',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
                   ),

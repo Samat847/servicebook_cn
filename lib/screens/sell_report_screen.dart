@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import '../models/models.dart';
 
 class SellReportScreen extends StatelessWidget {
-  final Map<String, dynamic> car;
+  final Car car;
 
   const SellReportScreen({super.key, required this.car});
 
@@ -49,34 +50,38 @@ class SellReportScreen extends StatelessWidget {
 
             // Шапка: авто и номер
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${car['brand']} ${car['model']} • ${car['plate'] ?? 'A 777 AA'}',
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    '${car.displayName} • ${car.plate ?? 'Без номера'}',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '799',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue.shade700,
-                      ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    car.shortInfo,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue.shade700,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
             ),
 
             // Карточка "Паспорт автомобиля"
@@ -85,8 +90,8 @@ class SellReportScreen extends StatelessWidget {
               subtitle: 'Краткое досье по основным параметрам',
               child: Column(
                 children: [
-                  _buildInfoRow('Год выпуска', car['year']?.toString() ?? '2023'),
-                  _buildInfoRow('Текущий пробег', '${car['mileage'] ?? '15 420'} км'),
+                  _buildInfoRow('Год выпуска', car.year),
+                  _buildInfoRow('Текущий пробег', '${car.mileage?.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]} ') ?? '—'} км'),
                   _buildInfoRow('Владелец', '1 владелец'),
                   const SizedBox(height: 8),
                   const Divider(height: 1),

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../models/models.dart';
+import '../services/car_storage.dart';
 
 class DriverLicenseScreen extends StatefulWidget {
-  const DriverLicenseScreen({super.key});
+  final Document? existingDocument;
+
+  const DriverLicenseScreen({super.key, this.existingDocument});
 
   @override
   State<DriverLicenseScreen> createState() => _DriverLicenseScreenState();
@@ -16,8 +20,30 @@ class _DriverLicenseScreenState extends State<DriverLicenseScreen> {
   String? _frontPhotoPath;
   String? _backPhotoPath;
   bool _isLoading = false;
+  String? _errorMessage;
 
   final List<String> _availableCategories = ['A', 'B', 'C', 'D', 'BE', 'CE', 'DE', 'M'];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExistingData();
+  }
+
+  void _loadExistingData() {
+    if (widget.existingDocument != null) {
+      final doc = widget.existingDocument!;
+      _licenseNumberController.text = doc.number ?? '';
+      if (doc.issueDate != null) _issueDate = doc.issueDate!;
+      if (doc.expiryDate != null) _expiryDate = doc.expiryDate!;
+      
+      // Load additional data
+      final additionalData = doc.additionalData ?? {};
+      _selectedCategories = (additionalData['categories'] as List<dynamic>?)?.cast<String>() ?? ['B'];
+      _frontPhotoPath = additionalData['frontPhotoPath'] as String?;
+      _backPhotoPath = additionalData['backPhotoPath'] as String?;
+    }
+  }
 
   @override
   void dispose() {
@@ -54,7 +80,6 @@ class _DriverLicenseScreenState extends State<DriverLicenseScreen> {
   }
 
   Future<void> _pickPhoto(bool isFront) async {
-    // TODO: Implement actual photo picker
     setState(() {
       if (isFront) {
         _frontPhotoPath = 'photo_path';
@@ -64,7 +89,7 @@ class _DriverLicenseScreenState extends State<DriverLicenseScreen> {
     });
   }
 
-  void _saveLicense() {
+  Future<void> _saveLicense() async {
     if (_licenseNumberController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Введите номер удостоверения')),
@@ -72,18 +97,64 @@ class _DriverLicenseScreenState extends State<DriverLicenseScreen> {
       return;
     }
 
+    if (_selectedCategories.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Выберите хотя бы одну категорию')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
-    // TODO: Save to storage
-    Future.delayed(const Duration(seconds: 1), () {
+    try {
+      final document = Document(
+        id: widget.existingDocument?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+        type: DocumentType.driverLicense,
+        title: 'Водительское удостоверение',
+        number: _licenseNumberController.text,
+        issueDate: _issueDate,
+        expiryDate: _expiryDate,
+        status: _calculateStatus(),
+        additionalData: {
+          'categories': _selectedCategories,
+          'frontPhotoPath': _frontPhotoPath,
+          'backPhotoPath': _backPhotoPath,
+        },
+        createdAt: widget.existingDocument?.createdAt ?? DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      await CarStorage.saveDocument(document);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.existingDocument != null ? 'Данные обновлены' : 'Водительское удостоверение сохранено'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
       setState(() => _isLoading = false);
-      Navigator.pop(context, {
-        'number': _licenseNumberController.text,
-        'issueDate': _issueDate,
-        'expiryDate': _expiryDate,
-        'categories': _selectedCategories,
-      });
-    });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Ошибка сохранения: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  DocumentStatus _calculateStatus() {
+    final now = DateTime.now();
+    final daysUntilExpiry = _expiryDate.difference(now).inDays;
+    
+    if (daysUntilExpiry < 0) return DocumentStatus.expired;
+    if (daysUntilExpiry < 30) return DocumentStatus.expiring;
+    return DocumentStatus.active;
   }
 
   @override
@@ -111,6 +182,29 @@ class _DriverLicenseScreenState extends State<DriverLicenseScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 16),
+
+                  if (_errorMessage != null)
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.error_outline, color: Colors.red.shade700),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: TextStyle(color: Colors.red.shade700),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
                   // Фото удостоверения
                   const Padding(
@@ -301,7 +395,7 @@ class _DriverLicenseScreenState extends State<DriverLicenseScreen> {
                       width: double.infinity,
                       child: ElevatedButton(
                         key: const Key('save_driver_license_button'),
-                        onPressed: _saveLicense,
+                        onPressed: _isLoading ? null : _saveLicense,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1E88E5),
                           foregroundColor: Colors.white,
@@ -310,13 +404,22 @@ class _DriverLicenseScreenState extends State<DriverLicenseScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          'Сохранить',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                widget.existingDocument != null ? 'Обновить' : 'Сохранить',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
                   ),

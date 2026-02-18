@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import '../models/models.dart';
+import '../services/car_storage.dart';
+import 'add_service_screen.dart';
 
 class AllRecordsScreen extends StatefulWidget {
-  const AllRecordsScreen({super.key});
+  final Car? car;
+
+  const AllRecordsScreen({super.key, this.car});
 
   @override
   State<AllRecordsScreen> createState() => _AllRecordsScreenState();
@@ -12,121 +17,118 @@ class _AllRecordsScreenState extends State<AllRecordsScreen> {
   String _selectedCategory = 'all';
   String _selectedSort = 'date_desc';
   bool _showFilters = false;
+  bool _isLoading = true;
+  String? _errorMessage;
 
-  final List<Map<String, dynamic>> _records = [
-    {
-      'id': '1',
-      'title': 'Плановое ТО-1',
-      'date': DateTime(2024, 10, 24),
-      'mileage': 15420,
-      'price': 18400,
-      'category': 'maintenance',
-      'place': 'Jetour Service',
-      'icon': Icons.build,
-      'color': Colors.blue,
-    },
-    {
-      'id': '2',
-      'title': 'Замена тормозной жидкости',
-      'date': DateTime(2024, 9, 15),
-      'mileage': 12800,
-      'price': 3200,
-      'category': 'repair',
-      'place': 'Гараж #1',
-      'icon': Icons.water_drop,
-      'color': Colors.orange,
-    },
-    {
-      'id': '3',
-      'title': 'Покупка зимней резины',
-      'date': DateTime(2024, 9, 2),
-      'mileage': 12700,
-      'price': 42000,
-      'category': 'parts',
-      'place': 'Магазин',
-      'icon': Icons.shopping_bag,
-      'color': Colors.green,
-    },
-    {
-      'id': '4',
-      'title': 'Замена масла',
-      'date': DateTime(2024, 8, 10),
-      'mileage': 11500,
-      'price': 8500,
-      'category': 'maintenance',
-      'place': 'Гараж #1',
-      'icon': Icons.oil_barrel,
-      'color': Colors.purple,
-    },
-    {
-      'id': '5',
-      'title': 'Диагностика подвески',
-      'date': DateTime(2024, 7, 20),
-      'mileage': 10200,
-      'price': 2000,
-      'category': 'diagnostics',
-      'place': 'СТО Автомир',
-      'icon': Icons.search,
-      'color': Colors.teal,
-    },
-    {
-      'id': '6',
-      'title': 'ОСАГО',
-      'date': DateTime(2024, 6, 15),
-      'mileage': 9800,
-      'price': 8500,
-      'category': 'insurance',
-      'place': 'Росгосстрах',
-      'icon': Icons.security,
-      'color': Colors.red,
-    },
-    {
-      'id': '7',
-      'title': 'Замена фильтров',
-      'date': DateTime(2024, 5, 5),
-      'mileage': 8500,
-      'price': 4500,
-      'category': 'maintenance',
-      'place': 'Jetour Service',
-      'icon': Icons.filter_alt,
-      'color': Colors.indigo,
-    },
-  ];
+  List<Expense> _expenses = [];
+  List<Car> _cars = [];
 
-  List<Map<String, dynamic>> get _filteredRecords {
-    var filtered = List<Map<String, dynamic>>.from(_records);
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final cars = await CarStorage.loadCarsList();
+      List<Expense> expenses;
+      
+      if (widget.car != null) {
+        expenses = await CarStorage.loadExpensesList(carId: widget.car!.id);
+      } else {
+        expenses = await CarStorage.loadExpensesList();
+      }
+
+      setState(() {
+        _cars = cars;
+        _expenses = expenses;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Ошибка загрузки данных: $e';
+      });
+    }
+  }
+
+  Future<void> _refreshData() async {
+    await _loadData();
+  }
+
+  Future<void> _deleteExpense(String id) async {
+    try {
+      await CarStorage.deleteExpense(id);
+      await _refreshData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Запись удалена'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Ошибка удаления: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  List<Expense> get _filteredExpenses {
+    var filtered = List<Expense>.from(_expenses);
 
     // Filter by category
     if (_selectedCategory != 'all') {
-      filtered = filtered.where((record) => record['category'] == _selectedCategory).toList();
+      filtered = filtered.where((expense) => expense.category.code == _selectedCategory).toList();
     }
 
     // Filter by search
     if (_searchController.text.isNotEmpty) {
       final query = _searchController.text.toLowerCase();
-      filtered = filtered.where((record) {
-        return record['title'].toString().toLowerCase().contains(query) ||
-            record['place'].toString().toLowerCase().contains(query);
+      filtered = filtered.where((expense) {
+        return expense.title.toLowerCase().contains(query) ||
+            (expense.place?.toLowerCase().contains(query) ?? false) ||
+            expense.category.displayName.toLowerCase().contains(query);
       }).toList();
     }
 
     // Sort
     if (_selectedSort == 'date_desc') {
-      filtered.sort((a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime));
+      filtered.sort((a, b) => b.date.compareTo(a.date));
     } else if (_selectedSort == 'date_asc') {
-      filtered.sort((a, b) => (a['date'] as DateTime).compareTo(b['date'] as DateTime));
+      filtered.sort((a, b) => a.date.compareTo(b.date));
     } else if (_selectedSort == 'price_desc') {
-      filtered.sort((a, b) => (b['price'] as int).compareTo(a['price'] as int));
+      filtered.sort((a, b) => b.amount.compareTo(a.amount));
     } else if (_selectedSort == 'price_asc') {
-      filtered.sort((a, b) => (a['price'] as int).compareTo(b['price'] as int));
+      filtered.sort((a, b) => a.amount.compareTo(b.amount));
     } else if (_selectedSort == 'mileage_desc') {
-      filtered.sort((a, b) => (b['mileage'] as int).compareTo(a['mileage'] as int));
+      filtered.sort((a, b) => b.mileage.compareTo(a.mileage));
     }
 
     return filtered;
   }
 
-  int get _totalExpenses => _filteredRecords.fold<int>(0, (sum, record) => sum + (record['price'] as int));
+  double get _totalExpenses => _filteredExpenses.fold<double>(0, (sum, expense) => sum + expense.amount);
+
+  Car? _getCarById(String carId) {
+    try {
+      return _cars.firstWhere((c) => c.id == carId);
+    } catch (e) {
+      return null;
+    }
+  }
 
   @override
   void dispose() {
@@ -163,88 +165,142 @@ class _AllRecordsScreenState extends State<AllRecordsScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Фильтры и поиск
-          if (_showFilters) _buildFiltersSection(),
-          const SizedBox(height: 8),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+                      const SizedBox(height: 16),
+                      Text(_errorMessage!, style: TextStyle(color: Colors.red[700])),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadData,
+                        child: const Text('Повторить'),
+                      ),
+                    ],
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _refreshData,
+                  child: Column(
+                    children: [
+                      // Фильтры и поиск
+                      if (_showFilters) _buildFiltersSection(),
+                      const SizedBox(height: 8),
 
-          // Статистика
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildStatItem(
-                    'Записей',
-                    '${_filteredRecords.length}',
-                    Icons.description,
-                    Colors.blue,
-                  ),
-                ),
-                Container(
-                  width: 1,
-                  height: 40,
-                  color: Colors.grey.shade300,
-                ),
-                Expanded(
-                  child: _buildStatItem(
-                    'Всего расходов',
-                    '${_formatPrice(_totalExpenses)}',
-                    Icons.account_balance_wallet,
-                    Colors.green,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
+                      // Статистика
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.08),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _buildStatItem(
+                                'Записей',
+                                '${_filteredExpenses.length}',
+                                Icons.description,
+                                Colors.blue,
+                              ),
+                            ),
+                            Container(
+                              width: 1,
+                              height: 40,
+                              color: Colors.grey.shade300,
+                            ),
+                            Expanded(
+                              child: _buildStatItem(
+                                'Всего расходов',
+                                '${_formatPrice(_totalExpenses.toInt())}',
+                                Icons.account_balance_wallet,
+                                Colors.green,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
 
-          // Список записей
-          Expanded(
-            child: _filteredRecords.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.inbox,
-                          size: 64,
-                          color: Colors.grey.shade300,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Записи не найдены',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _filteredRecords.length,
-                    itemBuilder: (context, index) {
-                      return _buildRecordCard(_filteredRecords[index]);
-                    },
+                      // Список записей
+                      Expanded(
+                        child: _filteredExpenses.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.inbox,
+                                      size: 64,
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Записи не найдены',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    if (_expenses.isEmpty && _cars.isNotEmpty)
+                                      TextButton(
+                                        onPressed: () async {
+                                          final result = await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => AddServiceScreen(car: _cars.first),
+                                            ),
+                                          );
+                                          if (result == true) {
+                                            await _refreshData();
+                                          }
+                                        },
+                                        child: const Text('Добавить первую запись'),
+                                      ),
+                                  ],
+                                ),
+                              )
+                            : ListView.builder(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                itemCount: _filteredExpenses.length,
+                                itemBuilder: (context, index) {
+                                  return _buildRecordCard(_filteredExpenses[index]);
+                                },
+                              ),
+                      ),
+                    ],
                   ),
-          ),
-        ],
-      ),
+                ),
+      floatingActionButton: _cars.isNotEmpty
+          ? FloatingActionButton(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddServiceScreen(car: widget.car ?? _cars.first),
+                  ),
+                );
+                if (result == true) {
+                  await _refreshData();
+                }
+              },
+              backgroundColor: const Color(0xFF1E88E5),
+              child: const Icon(Icons.add, color: Colors.white),
+            )
+          : null,
     );
   }
 
@@ -292,11 +348,13 @@ class _AllRecordsScreenState extends State<AllRecordsScreen> {
             runSpacing: 8,
             children: [
               _buildCategoryChip('Все', 'all'),
-              _buildCategoryChip('ТО', 'maintenance'),
-              _buildCategoryChip('Ремонт', 'repair'),
-              _buildCategoryChip('Запчасти', 'parts'),
-              _buildCategoryChip('Диагностика', 'diagnostics'),
-              _buildCategoryChip('Страховка', 'insurance'),
+              _buildCategoryChip('ТО', ExpenseCategory.maintenance.code),
+              _buildCategoryChip('Ремонт', ExpenseCategory.repair.code),
+              _buildCategoryChip('Запчасти', ExpenseCategory.parts.code),
+              _buildCategoryChip('Топливо', ExpenseCategory.fuel.code),
+              _buildCategoryChip('Мойка', ExpenseCategory.wash.code),
+              _buildCategoryChip('Страховка', ExpenseCategory.insurance.code),
+              _buildCategoryChip('Диагностика', ExpenseCategory.diagnostics.code),
             ],
           ),
           const SizedBox(height: 12),
@@ -378,10 +436,9 @@ class _AllRecordsScreenState extends State<AllRecordsScreen> {
     );
   }
 
-  Widget _buildRecordCard(Map<String, dynamic> record) {
-    final date = record['date'] as DateTime;
-    final formattedDate = '${date.day} ${_getMonthName(date.month)} ${date.year}';
-    final color = record['color'] as Color;
+  Widget _buildRecordCard(Expense expense) {
+    final formattedDate = '${expense.date.day} ${_getMonthName(expense.date.month)} ${expense.date.year}';
+    final car = _getCarById(expense.carId);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -390,7 +447,7 @@ class _AllRecordsScreenState extends State<AllRecordsScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
-        onTap: () => _showRecordDetail(record),
+        onTap: () => _showRecordDetail(expense),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -400,12 +457,12 @@ class _AllRecordsScreenState extends State<AllRecordsScreen> {
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: Color(expense.category.colorValue).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  record['icon'],
-                  color: color,
+                  _getCategoryIcon(expense.category),
+                  color: Color(expense.category.colorValue),
                   size: 26,
                 ),
               ),
@@ -415,7 +472,7 @@ class _AllRecordsScreenState extends State<AllRecordsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      record['title'],
+                      expense.title,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -445,7 +502,7 @@ class _AllRecordsScreenState extends State<AllRecordsScreen> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '${_formatMileage(record['mileage'])} км',
+                          '${expense.formattedMileage} км',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey.shade600,
@@ -453,37 +510,81 @@ class _AllRecordsScreenState extends State<AllRecordsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.location_on,
-                          size: 12,
-                          color: Colors.grey.shade500,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            record['place'],
+                    if (car != null) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.directions_car,
+                            size: 12,
+                            color: Colors.grey.shade500,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            car.displayName,
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade600,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                    ],
+                    if (expense.place != null) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_on,
+                            size: 12,
+                            color: Colors.grey.shade500,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              expense.place!,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
-              Text(
-                _formatPrice(record['price']),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E88E5),
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    expense.formattedAmount,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E88E5),
+                    ),
+                  ),
+                  if (expense.isConfirmed)
+                    Container(
+                      margin: const EdgeInsets.only(top: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '✓',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.green.shade700,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ],
           ),
@@ -492,13 +593,30 @@ class _AllRecordsScreenState extends State<AllRecordsScreen> {
     );
   }
 
-  void _showRecordDetail(Map<String, dynamic> record) {
+  IconData _getCategoryIcon(ExpenseCategory category) {
+    final iconMap = {
+      'local_gas_station': Icons.local_gas_station,
+      'build': Icons.build,
+      'local_car_wash': Icons.local_car_wash,
+      'car_repair': Icons.car_repair,
+      'security': Icons.security,
+      'shopping_bag': Icons.shopping_bag,
+      'search': Icons.search,
+      'tire_repair': Icons.tire_repair,
+      'more_horiz': Icons.more_horiz,
+    };
+    return iconMap[category.iconName] ?? Icons.receipt;
+  }
+
+  void _showRecordDetail(Expense expense) {
+    final car = _getCarById(expense.carId);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.4,
+        height: MediaQuery.of(context).size.height * 0.5,
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -526,12 +644,12 @@ class _AllRecordsScreenState extends State<AllRecordsScreen> {
                           width: 50,
                           height: 50,
                           decoration: BoxDecoration(
-                            color: (record['color'] as Color).withOpacity(0.1),
+                            color: Color(expense.category.colorValue).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
-                            record['icon'],
-                            color: record['color'],
+                            _getCategoryIcon(expense.category),
+                            color: Color(expense.category.colorValue),
                             size: 26,
                           ),
                         ),
@@ -541,14 +659,14 @@ class _AllRecordsScreenState extends State<AllRecordsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                record['title'],
+                                expense.title,
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Text(
-                                _formatPrice(record['price']),
+                                expense.formattedAmount,
                                 style: const TextStyle(
                                   fontSize: 16,
                                   color: Color(0xFF1E88E5),
@@ -561,15 +679,33 @@ class _AllRecordsScreenState extends State<AllRecordsScreen> {
                       ],
                     ),
                     const SizedBox(height: 24),
-                    _buildDetailRow('Дата', '${(record['date'] as DateTime).day}.${(record['date'] as DateTime).month}.${(record['date'] as DateTime).year}'),
-                    _buildDetailRow('Пробег', '${_formatMileage(record['mileage'])} км'),
-                    _buildDetailRow('Место', record['place']),
+                    _buildDetailRow('Дата', '${expense.date.day}.${expense.date.month}.${expense.date.year}'),
+                    _buildDetailRow('Пробег', '${expense.formattedMileage} км'),
+                    _buildDetailRow('Категория', expense.category.displayName),
+                    if (expense.place != null) _buildDetailRow('Место', expense.place!),
+                    if (car != null) _buildDetailRow('Автомобиль', car.displayName),
+                    if (expense.comment != null && expense.comment!.isNotEmpty)
+                      _buildDetailRow('Комментарий', expense.comment!),
                     const SizedBox(height: 24),
                     Row(
                       children: [
                         Expanded(
                           child: ElevatedButton.icon(
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () async {
+                              Navigator.pop(context);
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AddServiceScreen(
+                                    car: car ?? _cars.first,
+                                    existingExpense: expense,
+                                  ),
+                                ),
+                              );
+                              if (result == true) {
+                                await _refreshData();
+                              }
+                            },
                             icon: const Icon(Icons.edit, size: 18),
                             label: const Text('Редактировать'),
                             style: ElevatedButton.styleFrom(
@@ -585,7 +721,10 @@ class _AllRecordsScreenState extends State<AllRecordsScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _showDeleteConfirmation(expense);
+                            },
                             icon: const Icon(Icons.delete, size: 18),
                             label: const Text('Удалить'),
                             style: OutlinedButton.styleFrom(
@@ -606,6 +745,33 @@ class _AllRecordsScreenState extends State<AllRecordsScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(Expense expense) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Удалить запись?'),
+        content: Text('Вы уверены, что хотите удалить запись "${expense.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Отмена'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteExpense(expense.id);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Удалить'),
+          ),
+        ],
       ),
     );
   }
@@ -637,13 +803,6 @@ class _AllRecordsScreenState extends State<AllRecordsScreen> {
 
   String _formatPrice(int price) {
     return price.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]} ',
-    );
-  }
-
-  String _formatMileage(int mileage) {
-    return mileage.toString().replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
       (Match m) => '${m[1]} ',
     );

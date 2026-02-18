@@ -6,13 +6,13 @@ import 'services/car_storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await initializeDateFormatting('ru', null);
-  
+
   final isAuthenticated = await CarStorage.isAuthenticated();
-  final profile = await CarStorage.loadProfile();
-  final hasProfile = profile['name']!.isNotEmpty && profile['city']!.isNotEmpty;
-  
+  final profile = await CarStorage.loadUserProfile();
+  final hasProfile = profile.isComplete;
+
   runApp(MyApp(
     isAuthenticated: isAuthenticated,
     hasProfile: hasProfile,
@@ -22,7 +22,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   final bool isAuthenticated;
   final bool hasProfile;
-  
+
   const MyApp({
     super.key,
     required this.isAuthenticated,
@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: isAuthenticated 
+      home: isAuthenticated
           ? (hasProfile ? const MainScreen() : const AuthScreen())
           : const AuthScreen(),
     );

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../models/models.dart';
+import '../services/car_storage.dart';
 
 class AllOperationsScreen extends StatefulWidget {
-  const AllOperationsScreen({super.key});
+  final Car? car;
+
+  const AllOperationsScreen({super.key, this.car});
 
   @override
   State<AllOperationsScreen> createState() => _AllOperationsScreenState();
@@ -11,150 +15,85 @@ class AllOperationsScreen extends StatefulWidget {
 class _AllOperationsScreenState extends State<AllOperationsScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _selectedCategory = 'all';
+  bool _isLoading = true;
+  String? _errorMessage;
 
-  final List<Map<String, dynamic>> _allOperations = [
-    {
-      'date': DateTime(2024, 10, 24),
-      'description': 'Заправка АИ-95 • Газпромнефть',
-      'amount': 2450.0,
-      'category': 'Топливо',
-      'icon': Icons.local_gas_station,
-      'color': Colors.orange,
-      'car': 'Geely Monjaro',
-    },
-    {
-      'date': DateTime(2024, 10, 18),
-      'description': 'Мойка Люкс Комплекс',
-      'amount': 900.0,
-      'category': 'Мойка',
-      'icon': Icons.local_car_wash,
-      'color': Colors.blue,
-      'car': 'Geely Monjaro',
-    },
-    {
-      'date': DateTime(2024, 10, 15),
-      'description': 'Замена масла ТО-1 • Geely Service',
-      'amount': 4500.0,
-      'category': 'Обслуживание',
-      'icon': Icons.build,
-      'color': Colors.green,
-      'car': 'Geely Monjaro',
-    },
-    {
-      'date': DateTime(2024, 10, 10),
-      'description': 'Заправка АИ-95 • Лукойл',
-      'amount': 2100.0,
-      'category': 'Топливо',
-      'icon': Icons.local_gas_station,
-      'color': Colors.orange,
-      'car': 'Geely Monjaro',
-    },
-    {
-      'date': DateTime(2024, 10, 5),
-      'description': 'Шиномонтаж • Сезонная замена',
-      'amount': 3200.0,
-      'category': 'Обслуживание',
-      'icon': Icons.tire_repair,
-      'color': Colors.green,
-      'car': 'Geely Monjaro',
-    },
-    {
-      'date': DateTime(2024, 9, 28),
-      'description': 'Заправка АИ-95 • Shell',
-      'amount': 2800.0,
-      'category': 'Топливо',
-      'icon': Icons.local_gas_station,
-      'color': Colors.orange,
-      'car': 'Geely Monjaro',
-    },
-    {
-      'date': DateTime(2024, 9, 20),
-      'description': 'Диагностика подвески',
-      'amount': 1500.0,
-      'category': 'Диагностика',
-      'icon': Icons.search,
-      'color': Colors.purple,
-      'car': 'Geely Monjaro',
-    },
-    {
-      'date': DateTime(2024, 9, 15),
-      'description': 'Замена тормозных колодок',
-      'amount': 6500.0,
-      'category': 'Ремонт',
-      'icon': Icons.car_repair,
-      'color': Colors.red,
-      'car': 'Geely Monjaro',
-    },
-    {
-      'date': DateTime(2024, 9, 10),
-      'description': 'ОСАГО • Росгосстрах',
-      'amount': 12500.0,
-      'category': 'Страховка',
-      'icon': Icons.security,
-      'color': Colors.indigo,
-      'car': 'Geely Monjaro',
-    },
-    {
-      'date': DateTime(2024, 9, 5),
-      'description': 'Заправка АИ-95 • Татнефть',
-      'amount': 1950.0,
-      'category': 'Топливо',
-      'icon': Icons.local_gas_station,
-      'color': Colors.orange,
-      'car': 'Geely Monjaro',
-    },
-    {
-      'date': DateTime(2024, 8, 28),
-      'description': 'Полировка кузова',
-      'amount': 8500.0,
-      'category': 'Мойка',
-      'icon': Icons.auto_fix_high,
-      'color': Colors.blue,
-      'car': 'Geely Monjaro',
-    },
-    {
-      'date': DateTime(2024, 8, 20),
-      'description': 'Замена свечей зажигания',
-      'amount': 4200.0,
-      'category': 'Обслуживание',
-      'icon': Icons.electrical_services,
-      'color': Colors.green,
-      'car': 'Geely Monjaro',
-    },
-  ];
+  List<Expense> _expenses = [];
+  List<Car> _cars = [];
 
-  List<Map<String, dynamic>> get _filteredOperations {
-    var filtered = _allOperations;
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final cars = await CarStorage.loadCarsList();
+      List<Expense> expenses;
+
+      if (widget.car != null) {
+        expenses = await CarStorage.loadExpensesList(carId: widget.car!.id);
+      } else {
+        expenses = await CarStorage.loadExpensesList();
+      }
+
+      setState(() {
+        _cars = cars;
+        _expenses = expenses;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Ошибка загрузки данных: $e';
+      });
+    }
+  }
+
+  Future<void> _refreshData() async {
+    await _loadData();
+  }
+
+  List<Expense> get _filteredOperations {
+    var filtered = List<Expense>.from(_expenses);
 
     // Filter by category
     if (_selectedCategory != 'all') {
-      filtered = filtered
-          .where((op) => op['category'] == _selectedCategory)
-          .toList();
+      filtered = filtered.where((op) => op.category.displayName == _selectedCategory).toList();
     }
 
     // Filter by search
     if (_searchController.text.isNotEmpty) {
       final query = _searchController.text.toLowerCase();
       filtered = filtered.where((op) {
-        return op['description'].toString().toLowerCase().contains(query) ||
-            op['category'].toString().toLowerCase().contains(query);
+        return op.title.toLowerCase().contains(query) ||
+            op.category.displayName.toLowerCase().contains(query) ||
+            (op.place?.toLowerCase().contains(query) ?? false);
       }).toList();
     }
 
     // Sort by date (latest first)
-    filtered.sort(
-      (a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime),
-    );
+    filtered.sort((a, b) => b.date.compareTo(a.date));
 
     return filtered;
   }
 
   double get _totalExpenses {
-    return _filteredOperations.fold(
-      0,
-      (sum, op) => sum + (op['amount'] as double),
-    );
+    return _filteredOperations.fold<double>(0, (sum, op) => sum + op.amount);
+  }
+
+  Car? _getCarById(String carId) {
+    try {
+      return _cars.firstWhere((c) => c.id == carId);
+    } catch (e) {
+      return null;
+    }
   }
 
   @override
@@ -180,152 +119,159 @@ class _AllOperationsScreenState extends State<AllOperationsScreen> {
           ),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // Search functionality
-            },
-          ),
-        ],
       ),
-      body: Column(
-        children: [
-          // Search bar
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.white,
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Поиск по операциям',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {});
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: Colors.grey.shade100,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-              ),
-              onChanged: (value) => setState(() {}),
-            ),
-          ),
-
-          // Category filter chips
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: Colors.white,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildCategoryChip('Все', 'all'),
-                  const SizedBox(width: 8),
-                  _buildCategoryChip('Топливо', 'Топливо'),
-                  const SizedBox(width: 8),
-                  _buildCategoryChip('Обслуживание', 'Обслуживание'),
-                  const SizedBox(width: 8),
-                  _buildCategoryChip('Мойка', 'Мойка'),
-                  const SizedBox(width: 8),
-                  _buildCategoryChip('Ремонт', 'Ремонт'),
-                  const SizedBox(width: 8),
-                  _buildCategoryChip('Страховка', 'Страховка'),
-                ],
-              ),
-            ),
-          ),
-
-          // Total expenses summary
-          Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E88E5),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Всего расходов',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white70,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+                      const SizedBox(height: 16),
+                      Text(_errorMessage!, style: TextStyle(color: Colors.red[700])),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadData,
+                        child: const Text('Повторить'),
                       ),
-                    ),
-                    Text(
-                      '${_filteredOperations.length} операций',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.white54,
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  '${_formatPrice(_totalExpenses.toInt())} ₽',
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    ],
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          // Operations list
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () async {
-                // Refresh data
-                await Future.delayed(const Duration(seconds: 1));
-              },
-              child: _filteredOperations.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.receipt_long_outlined,
-                            size: 64,
-                            color: Colors.grey.shade300,
+                )
+              : Column(
+                  children: [
+                    // Search bar
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      color: Colors.white,
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Поиск по операциям',
+                          prefixIcon: const Icon(Icons.search),
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() {});
+                                  },
+                                )
+                              : null,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
                           ),
-                          const SizedBox(height: 16),
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        ),
+                        onChanged: (value) => setState(() {}),
+                      ),
+                    ),
+
+                    // Category filter chips
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      color: Colors.white,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _buildCategoryChip('Все', 'all'),
+                            const SizedBox(width: 8),
+                            _buildCategoryChip('Топливо', 'Топливо'),
+                            const SizedBox(width: 8),
+                            _buildCategoryChip('Обслуживание', 'Обслуживание'),
+                            const SizedBox(width: 8),
+                            _buildCategoryChip('Мойка', 'Мойка'),
+                            const SizedBox(width: 8),
+                            _buildCategoryChip('Ремонт', 'Ремонт'),
+                            const SizedBox(width: 8),
+                            _buildCategoryChip('Страховка', 'Страховка'),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Total expenses summary
+                    Container(
+                      margin: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E88E5),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Всего расходов',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                              Text(
+                                '${_filteredOperations.length} операций',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white54,
+                                ),
+                              ),
+                            ],
+                          ),
                           Text(
-                            'Операции не найдены',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey.shade600,
+                            '${_formatPrice(_totalExpenses.toInt())} ₽',
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
                             ),
                           ),
                         ],
                       ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: _filteredOperations.length,
-                      itemBuilder: (context, index) {
-                        return _buildOperationCard(_filteredOperations[index]);
-                      },
                     ),
-            ),
-          ),
-        ],
-      ),
+
+                    // Operations list
+                    Expanded(
+                      child: RefreshIndicator(
+                        onRefresh: _refreshData,
+                        child: _filteredOperations.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.receipt_long_outlined,
+                                      size: 64,
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Операции не найдены',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : ListView.builder(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                itemCount: _filteredOperations.length,
+                                itemBuilder: (context, index) {
+                                  return _buildOperationCard(_filteredOperations[index]);
+                                },
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
     );
   }
 
@@ -351,11 +297,27 @@ class _AllOperationsScreenState extends State<AllOperationsScreen> {
     );
   }
 
-  Widget _buildOperationCard(Map<String, dynamic> op) {
-    final date = op['date'] as DateTime;
+  IconData _getCategoryIcon(ExpenseCategory category) {
+    final iconMap = {
+      'local_gas_station': Icons.local_gas_station,
+      'build': Icons.build,
+      'local_car_wash': Icons.local_car_wash,
+      'car_repair': Icons.car_repair,
+      'security': Icons.security,
+      'shopping_bag': Icons.shopping_bag,
+      'search': Icons.search,
+      'tire_repair': Icons.tire_repair,
+      'more_horiz': Icons.more_horiz,
+    };
+    return iconMap[category.iconName] ?? Icons.receipt;
+  }
+
+  Widget _buildOperationCard(Expense expense) {
+    final date = expense.date;
     final day = date.day.toString();
     final month = DateFormat('MMM', 'ru').format(date);
     final year = date.year.toString();
+    final car = _getCarById(expense.carId);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -364,7 +326,7 @@ class _AllOperationsScreenState extends State<AllOperationsScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
-        onTap: () => _showOperationDetail(op),
+        onTap: () => _showOperationDetail(expense),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -374,7 +336,7 @@ class _AllOperationsScreenState extends State<AllOperationsScreen> {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: (op['color'] as Color).withOpacity(0.1),
+                  color: Color(expense.category.colorValue).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -404,7 +366,7 @@ class _AllOperationsScreenState extends State<AllOperationsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      op['description'],
+                      expense.title,
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
@@ -416,33 +378,35 @@ class _AllOperationsScreenState extends State<AllOperationsScreen> {
                     Row(
                       children: [
                         Icon(
-                          op['icon'] as IconData,
+                          _getCategoryIcon(expense.category),
                           size: 14,
                           color: Colors.grey.shade500,
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          op['category'],
+                          expense.category.displayName,
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.grey.shade600,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '•',
-                          style: TextStyle(
-                            color: Colors.grey.shade400,
+                        if (car != null) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            '•',
+                            style: TextStyle(
+                              color: Colors.grey.shade400,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          op['car'],
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey.shade600,
+                          const SizedBox(width: 8),
+                          Text(
+                            car.displayName,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade600,
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ],
@@ -452,7 +416,7 @@ class _AllOperationsScreenState extends State<AllOperationsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '-${_formatPrice(op['amount'].toInt())} ₽',
+                    '-${expense.formattedAmount} ₽',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -476,8 +440,9 @@ class _AllOperationsScreenState extends State<AllOperationsScreen> {
     );
   }
 
-  void _showOperationDetail(Map<String, dynamic> op) {
-    final date = op['date'] as DateTime;
+  void _showOperationDetail(Expense expense) {
+    final car = _getCarById(expense.carId);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -511,12 +476,12 @@ class _AllOperationsScreenState extends State<AllOperationsScreen> {
                           width: 60,
                           height: 60,
                           decoration: BoxDecoration(
-                            color: (op['color'] as Color).withOpacity(0.1),
+                            color: Color(expense.category.colorValue).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
-                            op['icon'] as IconData,
-                            color: op['color'] as Color,
+                            _getCategoryIcon(expense.category),
+                            color: Color(expense.category.colorValue),
                             size: 32,
                           ),
                         ),
@@ -526,7 +491,7 @@ class _AllOperationsScreenState extends State<AllOperationsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                op['description'],
+                                expense.title,
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -534,7 +499,7 @@ class _AllOperationsScreenState extends State<AllOperationsScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                op['category'],
+                                expense.category.displayName,
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.grey.shade600,
@@ -546,12 +511,13 @@ class _AllOperationsScreenState extends State<AllOperationsScreen> {
                       ],
                     ),
                     const SizedBox(height: 24),
-                    _buildDetailRow('Сумма', '-${_formatPrice(op['amount'].toInt())} ₽'),
+                    _buildDetailRow('Сумма', '-${expense.formattedAmount} ₽'),
                     _buildDetailRow(
                       'Дата',
-                      '${date.day} ${DateFormat('MMMM yyyy', 'ru').format(date)}',
+                      '${expense.date.day} ${DateFormat('MMMM yyyy', 'ru').format(expense.date)}',
                     ),
-                    _buildDetailRow('Автомобиль', op['car']),
+                    if (car != null) _buildDetailRow('Автомобиль', car.displayName),
+                    if (expense.place != null) _buildDetailRow('Место', expense.place!),
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../models/models.dart';
+import '../services/car_storage.dart';
 import 'driver_license_screen.dart';
 import 'insurance_screen.dart';
+import 'sts_detail_screen.dart';
 
 class DocumentsScreen extends StatefulWidget {
   const DocumentsScreen({super.key});
@@ -11,88 +15,113 @@ class DocumentsScreen extends StatefulWidget {
 
 class _DocumentsScreenState extends State<DocumentsScreen> {
   String _selectedFilter = 'all';
+  bool _isLoading = true;
+  String? _errorMessage;
+  List<Document> _documents = [];
 
-  final List<Map<String, dynamic>> _documents = [
-    {
-      'id': '1',
-      'type': 'sts',
-      'title': 'СТС',
-      'subtitle': 'Серия 99 АА №123456',
-      'icon': Icons.description,
-      'color': Colors.blue,
-      'status': 'active',
-      'expiry': 'Бессрочно',
-    },
-    {
-      'id': '2',
-      'type': 'driver_license',
-      'title': 'Водительское удостоверение',
-      'subtitle': '12 34 567890',
-      'icon': Icons.assignment_ind,
-      'color': Colors.green,
-      'status': 'active',
-      'expiry': '2028',
-    },
-    {
-      'id': '3',
-      'type': 'osago',
-      'title': 'ОСАГО',
-      'subtitle': 'Росгосстрах',
-      'icon': Icons.car_crash,
-      'color': Colors.orange,
-      'status': 'expiring',
-      'expiry': '2025',
-    },
-    {
-      'id': '4',
-      'type': 'pts',
-      'title': 'ПТС',
-      'subtitle': 'Электронный',
-      'icon': Icons.article,
-      'color': Colors.purple,
-      'status': 'active',
-      'expiry': 'Бессрочно',
-    },
-    {
-      'id': '5',
-      'type': 'diagnostic_card',
-      'title': 'Диагностическая карта',
-      'subtitle': 'Действует',
-      'icon': Icons.verified,
-      'color': Colors.teal,
-      'status': 'expiring',
-      'expiry': '2025',
-    },
-  ];
-
-  List<Map<String, dynamic>> get _filteredDocuments {
-    if (_selectedFilter == 'all') return _documents;
-    if (_selectedFilter == 'expiring') {
-      return _documents.where((doc) => doc['status'] == 'expiring').toList();
-    }
-    return _documents.where((doc) => doc['type'] == _selectedFilter).toList();
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
   }
 
-  void _navigateToDocumentDetail(Map<String, dynamic> document) {
-    switch (document['type']) {
-      case 'driver_license':
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final documents = await CarStorage.loadDocumentsList();
+      setState(() {
+        _documents = documents;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Ошибка загрузки данных: $e';
+      });
+    }
+  }
+
+  Future<void> _refreshData() async {
+    await _loadData();
+  }
+
+  Future<void> _deleteDocument(String id) async {
+    try {
+      await CarStorage.deleteDocument(id);
+      await _refreshData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Документ удален'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Ошибка удаления: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  List<Document> get _filteredDocuments {
+    if (_selectedFilter == 'all') return _documents;
+    if (_selectedFilter == 'expiring') {
+      return _documents.where((doc) => doc.calculatedStatus == DocumentStatus.expiring).toList();
+    }
+    if (_selectedFilter == 'expired') {
+      return _documents.where((doc) => doc.calculatedStatus == DocumentStatus.expired).toList();
+    }
+    return _documents.where((doc) => doc.type.code == _selectedFilter).toList();
+  }
+
+  void _navigateToDocumentDetail(Document document) {
+    switch (document.type) {
+      case DocumentType.driverLicense:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const DriverLicenseScreen()),
-        );
+          MaterialPageRoute(
+            builder: (context) => DriverLicenseScreen(existingDocument: document),
+          ),
+        ).then((result) {
+          if (result == true) _refreshData();
+        });
         break;
-      case 'osago':
+      case DocumentType.osago:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const InsuranceScreen()),
-        );
+          MaterialPageRoute(
+            builder: (context) => InsuranceScreen(existingDocument: document),
+          ),
+        ).then((result) {
+          if (result == true) _refreshData();
+        });
+        break;
+      case DocumentType.sts:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => STSDetailScreen(existingDocument: document),
+          ),
+        ).then((result) {
+          if (result == true) _refreshData();
+        });
         break;
       default:
         _showDocumentDetail(document);
     }
   }
 
-  void _showDocumentDetail(Map<String, dynamic> document) {
+  void _showDocumentDetail(Document document) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -126,12 +155,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                           width: 60,
                           height: 60,
                           decoration: BoxDecoration(
-                            color: (document['color'] as Color).withOpacity(0.1),
+                            color: Color(document.type.colorValue).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
-                            document['icon'],
-                            color: document['color'],
+                            _getDocumentIcon(document.type),
+                            color: Color(document.type.colorValue),
                             size: 32,
                           ),
                         ),
@@ -141,7 +170,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                document['title'],
+                                document.title,
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -149,7 +178,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                document['subtitle'],
+                                document.subtitle,
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.grey.shade600,
@@ -161,8 +190,10 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                       ],
                     ),
                     const SizedBox(height: 24),
-                    _buildDetailRow('Статус', document['status'] == 'expiring' ? 'Истекает' : 'Действует'),
-                    _buildDetailRow('Срок действия', document['expiry']),
+                    _buildDetailRow('Статус', document.calculatedStatus.displayName),
+                    _buildDetailRow('Срок действия', document.expiryDisplay),
+                    if (document.issueDate != null)
+                      _buildDetailRow('Дата выдачи', DateFormat('dd.MM.yyyy').format(document.issueDate!)),
                     const SizedBox(height: 24),
                     const Text(
                       'Действия',
@@ -186,9 +217,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                       },
                     ),
                     ListTile(
-                      leading: const Icon(Icons.share, color: Colors.green),
-                      title: const Text('Поделиться'),
-                      onTap: () => Navigator.pop(context),
+                      leading: const Icon(Icons.delete, color: Colors.red),
+                      title: const Text('Удалить', style: TextStyle(color: Colors.red)),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _showDeleteConfirmation(document);
+                      },
                     ),
                   ],
                 ),
@@ -196,6 +230,33 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(Document document) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Удалить документ?'),
+        content: Text('Вы уверены, что хотите удалить "${document.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Отмена'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteDocument(document.id);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Удалить'),
+          ),
+        ],
       ),
     );
   }
@@ -225,6 +286,18 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     );
   }
 
+  IconData _getDocumentIcon(DocumentType type) {
+    final iconMap = {
+      'description': Icons.description,
+      'article': Icons.article,
+      'assignment_ind': Icons.assignment_ind,
+      'car_crash': Icons.car_crash,
+      'verified': Icons.verified,
+      'shield': Icons.shield,
+    };
+    return iconMap[type.iconName] ?? Icons.description;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -250,67 +323,94 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Фильтры
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            color: Colors.white,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildFilterChip('Все', 'all'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Истекают', 'expiring'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('СТС', 'sts'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Права', 'driver_license'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('ОСАГО', 'osago'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('ПТС', 'pts'),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-
-          // Список документов
-          Expanded(
-            child: _filteredDocuments.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.folder_open,
-                          size: 64,
-                          color: Colors.grey.shade300,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Документы не найдены',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+                      const SizedBox(height: 16),
+                      Text(_errorMessage!, style: TextStyle(color: Colors.red[700])),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadData,
+                        child: const Text('Повторить'),
+                      ),
+                    ],
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _refreshData,
+                  child: Column(
+                    children: [
+                      // Фильтры
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        color: Colors.white,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _buildFilterChip('Все', 'all'),
+                              const SizedBox(width: 8),
+                              _buildFilterChip('Истекают', 'expiring'),
+                              const SizedBox(width: 8),
+                              _buildFilterChip('СТС', DocumentType.sts.code),
+                              const SizedBox(width: 8),
+                              _buildFilterChip('Права', DocumentType.driverLicense.code),
+                              const SizedBox(width: 8),
+                              _buildFilterChip('ОСАГО', DocumentType.osago.code),
+                              const SizedBox(width: 8),
+                              _buildFilterChip('ПТС', DocumentType.pts.code),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    itemCount: _filteredDocuments.length,
-                    itemBuilder: (context, index) {
-                      final document = _filteredDocuments[index];
-                      return _buildDocumentCard(document);
-                    },
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Список документов
+                      Expanded(
+                        child: _filteredDocuments.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.folder_open,
+                                      size: 64,
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Документы не найдены',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    ElevatedButton.icon(
+                                      onPressed: _showAddDocumentDialog,
+                                      icon: const Icon(Icons.add),
+                                      label: const Text('Добавить документ'),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : ListView.builder(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                itemCount: _filteredDocuments.length,
+                                itemBuilder: (context, index) {
+                                  final document = _filteredDocuments[index];
+                                  return _buildDocumentCard(document);
+                                },
+                              ),
+                      ),
+                    ],
                   ),
-          ),
-        ],
-      ),
+                ),
     );
   }
 
@@ -336,8 +436,10 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     );
   }
 
-  Widget _buildDocumentCard(Map<String, dynamic> document) {
-    final isExpiring = document['status'] == 'expiring';
+  Widget _buildDocumentCard(Document document) {
+    final isExpiring = document.calculatedStatus == DocumentStatus.expiring;
+    final isExpired = document.calculatedStatus == DocumentStatus.expired;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 1,
@@ -350,37 +452,39 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: (document['color'] as Color).withOpacity(0.1),
+            color: Color(document.type.colorValue).withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
-            document['icon'],
-            color: document['color'],
+            _getDocumentIcon(document.type),
+            color: Color(document.type.colorValue),
             size: 26,
           ),
         ),
         title: Row(
           children: [
-            Text(
-              document['title'],
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+            Expanded(
+              child: Text(
+                document.title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-            if (isExpiring) ...[
+            if (isExpiring || isExpired) ...[
               const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.red.shade50,
+                  color: isExpired ? Colors.red.shade50 : Colors.orange.shade50,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  'Истекает',
+                  isExpired ? 'Истек' : 'Истекает',
                   style: TextStyle(
                     fontSize: 10,
-                    color: Colors.red.shade700,
+                    color: isExpired ? Colors.red.shade700 : Colors.orange.shade700,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -393,7 +497,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           children: [
             const SizedBox(height: 4),
             Text(
-              document['subtitle'],
+              document.subtitle,
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade600,
@@ -401,10 +505,10 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Действует до: ${document['expiry']}',
+              document.expiryDisplay,
               style: TextStyle(
                 fontSize: 12,
-                color: isExpiring ? Colors.red.shade600 : Colors.grey.shade500,
+                color: isExpiring || isExpired ? Colors.red.shade600 : Colors.grey.shade500,
               ),
             ),
           ],
@@ -432,6 +536,14 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               title: const Text('СТС'),
               onTap: () {
                 Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const STSDetailScreen(),
+                  ),
+                ).then((result) {
+                  if (result == true) _refreshData();
+                });
               },
             ),
             ListTile(
@@ -441,8 +553,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const DriverLicenseScreen()),
-                );
+                  MaterialPageRoute(
+                    builder: (context) => const DriverLicenseScreen(),
+                  ),
+                ).then((result) {
+                  if (result == true) _refreshData();
+                });
               },
             ),
             ListTile(
@@ -452,8 +568,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const InsuranceScreen()),
-                );
+                  MaterialPageRoute(
+                    builder: (context) => const InsuranceScreen(),
+                  ),
+                ).then((result) {
+                  if (result == true) _refreshData();
+                });
               },
             ),
             ListTile(
@@ -461,11 +581,18 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               title: const Text('ПТС'),
               onTap: () {
                 Navigator.pop(context);
+                _showNotImplementedSnackBar();
               },
             ),
           ],
         ),
       ),
+    );
+  }
+
+  void _showNotImplementedSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Функция в разработке')),
     );
   }
 }
