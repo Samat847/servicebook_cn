@@ -104,7 +104,7 @@ class _PartnersScreenState extends State<PartnersScreen> {
             ),
             Text(
               widget.car != null
-                  ? 'СТО и магазины запчастей для ${widget.car!['brand']} ${widget.car!['model']}'
+                  ? 'СТО и магазины запчастей для ${widget.car!.brand} ${widget.car!.model}'
                   : 'СТО и магазины запчастей',
               style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
             ),
