@@ -13,6 +13,8 @@ class _STSDetailScreenState extends State<STSDetailScreen> {
   final TextEditingController _numberController = TextEditingController(text: '123456');
   final TextEditingController _vinController = TextEditingController(text: 'LVSHCAMB1CE012345');
   final TextEditingController _ownerController = TextEditingController(text: 'Иванов Иван Иванович');
+  final TextEditingController _makeController = TextEditingController(text: 'Toyota');
+  final TextEditingController _modelController = TextEditingController(text: 'Camry');
   DateTime _issueDate = DateTime(2022, 3, 15);
   String? _frontPhotoPath;
   String? _backPhotoPath;
@@ -25,6 +27,8 @@ class _STSDetailScreenState extends State<STSDetailScreen> {
     _numberController.dispose();
     _vinController.dispose();
     _ownerController.dispose();
+    _makeController.dispose();
+    _modelController.dispose();
     super.dispose();
   }
 
@@ -74,6 +78,12 @@ class _STSDetailScreenState extends State<STSDetailScreen> {
         const SnackBar(content: Text('СТС сохранено')),
       );
     }
+  }
+
+  void _downloadPdf() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Скачиваем PDF...')),
+    );
   }
 
   @override
@@ -214,6 +224,30 @@ class _STSDetailScreenState extends State<STSDetailScreen> {
                           icon: Icons.person,
                           readOnly: !_isEditing,
                         ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          'Данные автомобиля',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildTextField(
+                          controller: _makeController,
+                          label: 'Марка',
+                          hint: 'Toyota',
+                          icon: Icons.directions_car,
+                          readOnly: !_isEditing,
+                        ),
+                        const SizedBox(height: 16),
+                        _buildTextField(
+                          controller: _modelController,
+                          label: 'Модель',
+                          hint: 'Camry',
+                          icon: Icons.directions_car_filled,
+                          readOnly: !_isEditing,
+                        ),
                         const SizedBox(height: 16),
 
                         // Issue date
@@ -280,6 +314,52 @@ class _STSDetailScreenState extends State<STSDetailScreen> {
                       ],
                     ),
                   ),
+
+                  if (!_isEditing) ...[
+                    const SizedBox(height: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _downloadPdf,
+                              icon: const Icon(Icons.download),
+                              label: const Text('Скачать PDF'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF1E88E5),
+                                side: const BorderSide(color: Color(0xFF1E88E5)),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  _isEditing = true;
+                                });
+                              },
+                              icon: const Icon(Icons.edit),
+                              label: const Text('Редактировать'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF1E88E5),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
 
                   // Buttons
                   if (_isEditing) ...[
@@ -405,6 +485,14 @@ class _STSDetailScreenState extends State<STSDetailScreen> {
               fontSize: 14,
               color: Colors.white70,
               fontFamily: 'monospace',
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Авто: ${_makeController.text} ${_modelController.text}',
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.white70,
             ),
           ),
           const SizedBox(height: 4),
