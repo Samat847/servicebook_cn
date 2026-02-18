@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'screens/auth_screen.dart';
 import 'screens/main_screen.dart';
 import 'services/car_storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  await initializeDateFormatting('ru', null);
   
   final isAuthenticated = await CarStorage.isAuthenticated();
   final profile = await CarStorage.loadProfile();
