@@ -11,6 +11,7 @@ class InsuranceScreen extends StatefulWidget {
 class _InsuranceScreenState extends State<InsuranceScreen> {
   String _policyType = 'OSAGO';
   final TextEditingController _policyNumberController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController();
   String _selectedCompany = 'Росгосстрах';
   DateTime _startDate = DateTime.now();
   DateTime _endDate = DateTime.now().add(const Duration(days: 365));
@@ -31,6 +32,7 @@ class _InsuranceScreenState extends State<InsuranceScreen> {
   @override
   void dispose() {
     _policyNumberController.dispose();
+    _amountController.dispose();
     super.dispose();
   }
 
@@ -70,6 +72,13 @@ class _InsuranceScreenState extends State<InsuranceScreen> {
       return;
     }
 
+    if (_amountController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Укажите сумму полиса')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     // TODO: Save to storage
@@ -81,6 +90,7 @@ class _InsuranceScreenState extends State<InsuranceScreen> {
         'company': _selectedCompany,
         'startDate': _startDate,
         'endDate': _endDate,
+        'amount': _amountController.text,
       });
     });
   }
@@ -94,7 +104,7 @@ class _InsuranceScreenState extends State<InsuranceScreen> {
         foregroundColor: Colors.black,
         elevation: 0.5,
         title: const Text(
-          'Страховка',
+          'ОСАГО',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -323,6 +333,38 @@ class _InsuranceScreenState extends State<InsuranceScreen> {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Сумма полиса
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'Сумма полиса',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: TextField(
+                      controller: _amountController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        hintText: 'Например, 12 000 ₽',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 24),
 
