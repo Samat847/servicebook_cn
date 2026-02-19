@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/models.dart';
 import '../services/car_storage.dart';
 
@@ -54,9 +55,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   Future<void> _pickPhoto() async {
-    setState(() {
-      _photoPath = 'photo_path';
-    });
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (image != null) {
+      setState(() {
+        _photoPath = image.path;
+      });
+    }
   }
 
   Future<void> _saveProfile() async {

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/locale_provider.dart';
 
 class LanguageSettingsScreen extends StatefulWidget {
   const LanguageSettingsScreen({super.key});
@@ -23,44 +25,34 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
       'nativeName': 'English',
       'flag': '🇬🇧',
     },
-    {
-      'code': 'de',
-      'name': 'Deutsch',
-      'nativeName': 'Deutsch',
-      'flag': '🇩🇪',
-    },
-    {
-      'code': 'fr',
-      'name': 'Français',
-      'nativeName': 'Français',
-      'flag': '🇫🇷',
-    },
-    {
-      'code': 'es',
-      'name': 'Español',
-      'nativeName': 'Español',
-      'flag': '🇪🇸',
-    },
-    {
-      'code': 'zh',
-      'name': '中文',
-      'nativeName': '中文',
-      'flag': '🇨🇳',
-    },
   ];
 
-  void _selectLanguage(String code) {
+  @override
+  void initState() {
+    super.initState();
+    // Загружаем текущий язык из провайдера
+    final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
+    _selectedLanguage = localeProvider.locale.languageCode;
+  }
+
+  Future<void> _selectLanguage(String code) async {
     setState(() {
       _selectedLanguage = code;
     });
 
+    // Получаем provider и меняем locale
+    final localeProvider = context.read<LocaleProvider>();
+    await localeProvider.setLocale(Locale(code));
+
     final selectedLang = _languages.firstWhere((lang) => lang['code'] == code);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Язык изменен на ${selectedLang['nativeName']}'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Язык изменен на ${selectedLang['nativeName']}'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   @override

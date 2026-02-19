@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/models.dart';
 import '../services/car_storage.dart';
+import '../services/notification_service.dart';
 
 class AddServiceScreen extends StatefulWidget {
   final Car car;
@@ -24,6 +27,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   final TextEditingController _placeController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
   bool _hasReceiptPhoto = false;
+  String? _receiptPhotoPath;
   bool _isConfirmed = false;
   bool _isLoading = false;
   String? _errorMessage;
@@ -66,6 +70,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       _placeController.text = expense.place ?? '';
       _commentController.text = expense.comment ?? '';
       _hasReceiptPhoto = expense.hasReceipt;
+      _receiptPhotoPath = expense.receiptPhotoPath;
       _isConfirmed = expense.isConfirmed;
       _selectedCategory = expense.category;
       _selectedWorkTypes.addAll(expense.workTypes);
@@ -81,6 +86,17 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     _placeController.dispose();
     _commentController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickReceiptPhoto() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (image != null) {
+      setState(() {
+        _receiptPhotoPath = image.path;
+        _hasReceiptPhoto = true;
+      });
+    }
   }
 
   void _toggleWorkType(String type) {
@@ -147,6 +163,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         workTypes: List.from(_selectedWorkTypes),
         comment: _commentController.text.isNotEmpty ? _commentController.text : null,
         hasReceipt: _hasReceiptPhoto,
+        receiptPhotoPath: _receiptPhotoPath,
         isConfirmed: _isConfirmed,
         createdAt: widget.existingExpense?.createdAt ?? DateTime.now(),
       );
@@ -156,6 +173,16 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       // Update car mileage if current expense mileage is higher
       if (widget.car.mileage == null || expense.mileage > widget.car.mileage!) {
         await CarStorage.saveCar(widget.car.copyWith(mileage: expense.mileage));
+      }
+
+      // Schedule notification if it's a maintenance/service record
+      if (expense.isServiceRecord) {
+        final nextServiceDate = DateTime(expense.date.year, expense.date.month + 6, expense.date.day);
+        await NotificationService.scheduleServiceNotification(
+          id: expense.id.hashCode,
+          carName: widget.car.displayName,
+          nextServiceDate: nextServiceDate,
+        );
       }
 
       if (mounted) {
@@ -595,28 +622,35 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                             border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
                           ),
                           child: IconButton(
-                            icon: const Icon(Icons.add_a_photo, color: Colors.grey),
-                            onPressed: () {
-                              setState(() {
-                                _hasReceiptPhoto = true;
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Фото добавлено')),
-                              );
-                            },
+                            icon: Icon(
+                              _receiptPhotoPath != null ? Icons.check : Icons.add_a_photo,
+                              color: _receiptPhotoPath != null ? Colors.green : Colors.grey,
+                            ),
+                            onPressed: _pickReceiptPhoto,
                           ),
                         ),
-                        if (_hasReceiptPhoto) ...[
+                        if (_receiptPhotoPath != null) ...[
                           const SizedBox(width: 12),
-                          Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(12),
-                              image: const DecorationImage(
-                                image: NetworkImage('https://via.placeholder.com/150'),
-                                fit: BoxFit.cover,
+                          GestureDetector(
+                            onTap: _pickReceiptPhoto,
+                            child: Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.file(
+                                  File(_receiptPhotoPath!),
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Center(
+                                      child: Icon(Icons.broken_image, color: Colors.grey),
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                           ),
