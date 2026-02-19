@@ -1,6 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'profile_edit_screen.dart';
+import 'security_settings_screen.dart';
+import 'data_management_screen.dart';
+import 'backup_settings_screen.dart';
+import 'help_and_faq_screen.dart';
+import 'support_screen.dart';
+import 'privacy_policy_screen.dart';
+import 'terms_of_service_screen.dart';
+import 'about_screen.dart';
+import 'language_settings_screen.dart';
+import '../services/car_storage.dart';
+import 'auth_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -57,13 +69,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.person_outline,
             title: 'Редактировать профиль',
             subtitle: 'Имя, город, телефон',
-            onTap: () {},
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileEditScreen())).then((_) => setState(() {})),
           ),
           _buildSettingsTile(
             icon: Icons.lock_outline,
             title: 'Безопасность',
             subtitle: 'Пароль, two-factor auth',
-            onTap: () {},
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SecuritySettingsScreen())),
           ),
           const SizedBox(height: 8),
 
@@ -95,7 +107,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.language_outlined,
             title: 'Язык',
             subtitle: _selectedLanguage == 'ru' ? 'Русский' : 'English',
-            onTap: () => _showLanguageDialog(),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LanguageSettingsScreen())),
           ),
           _buildSwitchTile(
             icon: Icons.cloud_upload_outlined,
@@ -116,13 +128,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.storage_outlined,
             title: 'Управление данными',
             subtitle: 'Экспорт, импорт, очистка',
-            onTap: () {},
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DataManagementScreen())),
           ),
           _buildSettingsTile(
             icon: Icons.backup_outlined,
             title: 'Резервные копии',
             subtitle: 'История бэкапов',
-            onTap: () {},
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BackupSettingsScreen())),
           ),
           const SizedBox(height: 8),
 
@@ -132,19 +144,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.help_outline,
             title: 'Помощь и FAQ',
             subtitle: 'Часто задаваемые вопросы',
-            onTap: () {},
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HelpAndFaqScreen())),
           ),
           _buildSettingsTile(
             icon: Icons.contact_support_outlined,
             title: 'Связаться с поддержкой',
             subtitle: 'Написать нам',
-            onTap: () {},
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SupportScreen())),
           ),
           _buildSettingsTile(
             icon: Icons.star_outline,
             title: 'Оценить приложение',
             subtitle: 'Оставить отзыв в магазине',
-            onTap: () {},
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Спасибо за ваш отзыв!')),
+              );
+            },
           ),
           const SizedBox(height: 8),
 
@@ -153,18 +169,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildSettingsTile(
             icon: Icons.description_outlined,
             title: 'Политика конфиденциальности',
-            onTap: () {},
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen())),
           ),
           _buildSettingsTile(
             icon: Icons.gavel_outlined,
             title: 'Условия использования',
-            onTap: () {},
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsOfServiceScreen())),
           ),
           _buildSettingsTile(
             icon: Icons.info_outline,
             title: 'О приложении',
             subtitle: 'Версия $_appVersion',
-            onTap: () => _showAboutDialog(),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen())),
           ),
           const SizedBox(height: 8),
 
@@ -327,12 +343,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: const Text('Отмена'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // TODO: Implement logout
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Выход из аккаунта')),
-              );
+              await CarStorage.saveAuthStatus(false);
+              if (mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const AuthScreen()),
+                  (route) => false,
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,

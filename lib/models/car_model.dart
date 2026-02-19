@@ -23,13 +23,13 @@ class Car {
 
   factory Car.fromJson(Map<String, dynamic> json) {
     return Car(
-      id: json['id'] as String,
-      brand: json['brand'] as String,
-      model: json['model'] as String,
-      year: json['year'] as String,
+      id: json['id'] as String? ?? '',
+      brand: json['brand'] as String? ?? '',
+      model: json['model'] as String? ?? '',
+      year: json['year'] as String? ?? '',
       vin: json['vin'] as String?,
       plate: json['plate'] as String?,
-      addedDate: DateTime.parse(json['addedDate'] as String),
+      addedDate: DateTime.tryParse(json['addedDate'] as String? ?? '') ?? DateTime.now(),
       mileage: json['mileage'] as int?,
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
+import '../services/car_storage.dart';
 
 class AddCarScreen extends StatefulWidget {
   const AddCarScreen({super.key});
@@ -476,7 +477,7 @@ class _AddCarScreenState extends State<AddCarScreen> {
     );
   }
 
-  void _saveCar() {
+  Future<void> _saveCar() async {
     if (_selectedBrand == null || _selectedModel == null || _selectedYear == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -499,16 +500,20 @@ class _AddCarScreenState extends State<AddCarScreen> {
       mileage: _mileage.isNotEmpty ? int.tryParse(_mileage.replaceAll(RegExp(r'\D'), '')) : null,
     );
 
-    // Возвращаемся на главный экран и передаем новый автомобиль
-    Navigator.pop(context, newCar);
+    // Прямое сохранение в SharedPreferences — страховка
+    await CarStorage.saveCar(newCar);
 
-    // Показываем сообщение об успехе
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Автомобиль $_selectedBrand $_selectedModel добавлен!'),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    if (mounted) {
+      Navigator.pop(context, newCar);
+
+      // Показываем сообщение об успехе
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Автомобиль $_selectedBrand $_selectedModel добавлен!'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 }

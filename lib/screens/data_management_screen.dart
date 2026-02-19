@@ -1,10 +1,30 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../models/models.dart';
+import '../services/car_storage.dart';
 
 class DataManagementScreen extends StatefulWidget {
   const DataManagementScreen({super.key});
 
   @override
   State<DataManagementScreen> createState() => _DataManagementScreenState();
+}
+
+extension IterableExtensions<T> on Iterable<T> {
+  T? firstWhereOrNull(bool Function(T) test) {
+    for (final element in this) {
+      if (test(element)) return element;
+    }
+    return null;
+  }
 }
 
 class _DataManagementScreenState extends State<DataManagementScreen> {
@@ -19,38 +39,160 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
   Future<void> _exportData(String format) async {
     setState(() => _isExporting = true);
 
-    // TODO: Implement actual export
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final cars = await CarStorage.loadCarsList();
+      final expenses = await CarStorage.loadExpensesList();
+      final documents = await CarStorage.loadDocumentsList();
+      final profile = await CarStorage.loadUserProfile();
+
+      if (format == 'JSON') {
+        final data = {
+          'exportedAt': DateTime.now().toIso8601String(),
+          'version': '1.0',
+          'profile': profile.toJson(),
+          'cars': cars.map((c) => c.toJson()).toList(),
+          'expenses': expenses.map((e) => e.toJson()).toList(),
+          'documents': documents.map((d) => d.toJson()).toList(),
+        };
+
+        final jsonString = const JsonEncoder.withIndent('  ').convert(data);
+        final tempDir = await getTemporaryDirectory();
+        final file = File(
+            '${tempDir.path}/servicebook_export_${DateTime.now().millisecondsSinceEpoch}.json');
+        await file.writeAsString(jsonString);
+
+        await Share.shareXFiles([XFile(file.path)], text: 'ServiceBook данные');
+      } else if (format == 'PDF') {
+        final pdf = pw.Document();
+
+        pdf.addPage(
+          pw.MultiPage(
+            pageFormat: PdfPageFormat.a4,
+            build: (context) => [
+              pw.Header(
+                level: 0,
+                child: pw.Text('ServiceBook — Отчёт',
+                    style: pw.TextStyle(
+                        fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              ),
+              pw.SizedBox(height: 10),
+              pw.Text(
+                  'Дата: ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().year}'),
+              pw.SizedBox(height: 20),
+              pw.Header(level: 1, child: pw.Text('Автомобили')),
+              if (cars.isNotEmpty)
+                pw.Table.fromTextArray(
+                  headers: ['Марка', 'Модель', 'Год', 'Госномер', 'Пробег'],
+                  data: cars.map((c) => [
+                    c.brand,
+                    c.model,
+                    c.year,
+                    c.plate ?? '—',
+                    '${c.mileage ?? 0} км'
+                  ]).toList(),
+                )
+              else
+                pw.Text('Нет автомобилей'),
+              pw.SizedBox(height: 20),
+              pw.Header(level: 1, child: pw.Text('Записи обслуживания')),
+              if (expenses.isNotEmpty)
+                pw.Table.fromTextArray(
+                  headers: ['Дата', 'Авто', 'Тип', 'Сумма', 'Пробег'],
+                  data: expenses.map((e) {
+                    final car = cars.where((c) => c.id == e.carId).firstOrNull;
+                    return [
+                      '${e.date.day}.${e.date.month}.${e.date.year}',
+                      car?.displayName ?? '—',
+                      e.category.displayName,
+                      '${e.formattedAmount} ₽',
+                      '${e.formattedMileage} км',
+                    ];
+                  }).toList(),
+                )
+              else
+                pw.Text('Нет записей'),
+            ],
+          ),
+        );
+
+        await Printing.sharePdf(
+            bytes: await pdf.save(),
+            filename: 'servicebook_report_${DateTime.now().millisecondsSinceEpoch}.pdf');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка экспорта: $e')),
+        );
+      }
+    }
 
     setState(() => _isExporting = false);
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Данные экспортированы в формат $format')),
-      );
-    }
   }
 
   Future<void> _importData() async {
     setState(() => _isImporting = true);
 
-    // TODO: Implement actual import
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final file = File(result.files.single.path!);
+        final jsonString = await file.readAsString();
+        final data = jsonDecode(jsonString) as Map<String, dynamic>;
+
+        // Импорт cars
+        final carsJson = data['cars'] as List<dynamic>? ?? [];
+        for (final c in carsJson) {
+          await CarStorage.saveCar(Car.fromJson(c as Map<String, dynamic>));
+        }
+
+        // Импорт expenses
+        final expensesJson = data['expenses'] as List<dynamic>? ?? [];
+        for (final e in expensesJson) {
+          await CarStorage.saveExpense(
+              Expense.fromJson(e as Map<String, dynamic>));
+        }
+
+        // Импорт documents
+        final documentsJson = data['documents'] as List<dynamic>? ?? [];
+        for (final d in documentsJson) {
+          await CarStorage.saveDocument(
+              Document.fromJson(d as Map<String, dynamic>));
+        }
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Данные успешно импортированы')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка импорта: $e')),
+        );
+      }
+    }
 
     setState(() => _isImporting = false);
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Данные успешно импортированы')),
-      );
-    }
   }
 
   Future<void> _clearAllData() async {
     setState(() => _isClearing = true);
 
-    // TODO: Implement actual clear
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      await CarStorage.clearAll();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка очистки: $e')),
+        );
+      }
+    }
 
     setState(() => _isClearing = false);
 

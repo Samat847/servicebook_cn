@@ -1,4 +1,12 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../models/models.dart';
+import '../services/car_storage.dart';
 
 class BackupSettingsScreen extends StatefulWidget {
   const BackupSettingsScreen({super.key});
@@ -9,59 +17,144 @@ class BackupSettingsScreen extends StatefulWidget {
 
 class _BackupSettingsScreenState extends State<BackupSettingsScreen> {
   bool _autoBackupEnabled = true;
-  String _selectedBackupProvider = 'google_drive';
+  String _selectedBackupProvider = 'local';
   bool _isBackingUp = false;
   bool _isRestoring = false;
+  List<Map<String, dynamic>> _backupHistory = [];
 
-  final List<Map<String, dynamic>> _backupHistory = [
-    {
-      'date': DateTime(2024, 10, 24, 14, 30),
-      'size': '2.4 MB',
-      'status': 'success',
-      'provider': 'google_drive',
-    },
-    {
-      'date': DateTime(2024, 10, 17, 9, 15),
-      'size': '2.3 MB',
-      'status': 'success',
-      'provider': 'google_drive',
-    },
-    {
-      'date': DateTime(2024, 10, 10, 16, 45),
-      'size': '2.1 MB',
-      'status': 'success',
-      'provider': 'local',
-    },
-  ];
+  static const String _backupHistoryKey = 'backup_history';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBackupHistory();
+  }
+
+  Future<void> _loadBackupHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final historyStrings = prefs.getStringList(_backupHistoryKey) ?? [];
+    final history = <Map<String, dynamic>>[];
+    for (final s in historyStrings) {
+      try {
+        history.add(jsonDecode(s) as Map<String, dynamic>);
+      } catch (e) {
+        // Skip invalid entries
+      }
+    }
+    setState(() {
+      _backupHistory = history;
+    });
+  }
+
+  Future<void> _saveBackupHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final historyStrings = _backupHistory.map((e) => jsonEncode(e)).toList();
+    await prefs.setStringList(_backupHistoryKey, historyStrings);
+  }
 
   Future<void> _createBackup() async {
     setState(() => _isBackingUp = true);
 
-    // TODO: Implement actual backup
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final cars = await CarStorage.loadCarsList();
+      final expenses = await CarStorage.loadExpensesList();
+      final documents = await CarStorage.loadDocumentsList();
+      final profile = await CarStorage.loadUserProfile();
+
+      final data = {
+        'exportedAt': DateTime.now().toIso8601String(),
+        'version': '1.0',
+        'profile': profile.toJson(),
+        'cars': cars.map((c) => c.toJson()).toList(),
+        'expenses': expenses.map((e) => e.toJson()).toList(),
+        'documents': documents.map((d) => d.toJson()).toList(),
+      };
+
+      final jsonString = jsonEncode(data);
+
+      // Сохраняем в Documents через path_provider
+      final dir = await getApplicationDocumentsDirectory();
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileName = 'servicebook_backup_$timestamp.json';
+      final file = File('${dir.path}/$fileName');
+      await file.writeAsString(jsonString);
+
+      // Обновляем список backup history
+      final entry = jsonEncode({
+        'path': file.path,
+        'date': DateTime.now().toIso8601String(),
+        'size': '${(jsonString.length / 1024).toStringAsFixed(1)} KB',
+        'status': 'success',
+        'provider': 'local',
+      });
+      _backupHistory.insert(0, jsonDecode(entry));
+      await _saveBackupHistory();
+
+      // Поделиться файлом
+      await Share.shareXFiles([XFile(file.path)], text: 'ServiceBook backup');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка создания бэкапа: $e')),
+        );
+      }
+    }
 
     setState(() => _isBackingUp = false);
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Резервная копия создана')),
-      );
-    }
   }
 
   Future<void> _restoreBackup() async {
     setState(() => _isRestoring = true);
 
-    // TODO: Implement actual restore
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final file = File(result.files.single.path!);
+        final jsonString = await file.readAsString();
+        final data = jsonDecode(jsonString) as Map<String, dynamic>;
+
+        // Очистка текущих данных
+        await CarStorage.clearAll();
+
+        // Импорт cars
+        final carsJson = data['cars'] as List<dynamic>? ?? [];
+        for (final c in carsJson) {
+          await CarStorage.saveCar(Car.fromJson(c as Map<String, dynamic>));
+        }
+
+        // Импорт expenses
+        final expensesJson = data['expenses'] as List<dynamic>? ?? [];
+        for (final e in expensesJson) {
+          await CarStorage.saveExpense(
+              Expense.fromJson(e as Map<String, dynamic>));
+        }
+
+        // Импорт documents
+        final documentsJson = data['documents'] as List<dynamic>? ?? [];
+        for (final d in documentsJson) {
+          await CarStorage.saveDocument(
+              Document.fromJson(d as Map<String, dynamic>));
+        }
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Данные восстановлены')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка восстановления: $e')),
+        );
+      }
+    }
 
     setState(() => _isRestoring = false);
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Данные восстановлены')),
-      );
-    }
   }
 
   void _showRestoreDialog() {
@@ -366,9 +459,10 @@ class _BackupSettingsScreenState extends State<BackupSettingsScreen> {
   }
 
   Widget _buildBackupHistoryCard(Map<String, dynamic> backup) {
-    final date = backup['date'] as DateTime;
+    final dateStr = backup['date'] as String? ?? '';
+    final date = dateStr.isNotEmpty ? DateTime.tryParse(dateStr) : null;
     final isSuccess = backup['status'] == 'success';
-    final provider = backup['provider'] == 'google_drive' ? 'Google Drive' : 'Локально';
+    final provider = (backup['provider'] as String? ?? 'local') == 'local' ? 'Локально' : 'Google Drive';
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -391,7 +485,9 @@ class _BackupSettingsScreenState extends State<BackupSettingsScreen> {
           ),
         ),
         title: Text(
-          '${date.day}.${date.month}.${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}',
+          date != null
+              ? '${date.day}.${date.month}.${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}'
+              : 'Неизвестно',
           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
         ),
         subtitle: Text(
@@ -399,7 +495,7 @@ class _BackupSettingsScreenState extends State<BackupSettingsScreen> {
           style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
         ),
         trailing: TextButton(
-          onPressed: () => _showRestoreDialog(),
+          onPressed: _restoreBackup,
           child: const Text('Восстановить'),
         ),
       ),

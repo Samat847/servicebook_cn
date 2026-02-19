@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 
@@ -39,9 +40,17 @@ class CarStorage {
     try {
       final prefs = await SharedPreferences.getInstance();
       final carStrings = prefs.getStringList(_carsKey) ?? [];
-      
-      return carStrings.map((s) => Car.fromJsonString(s)).toList();
+      final result = <Car>[];
+      for (final s in carStrings) {
+        try {
+          result.add(Car.fromJsonString(s));
+        } catch (e) {
+          debugPrint('[CarStorage] Failed to parse car: $e\nRaw: $s');
+        }
+      }
+      return result;
     } catch (e) {
+      debugPrint('[CarStorage] loadCarsList error: $e');
       return [];
     }
   }
