@@ -24,20 +24,26 @@ void main() async {
   final profile = await CarStorage.loadUserProfile();
   final hasProfile = profile.isComplete;
 
+  final localeProvider = LocaleProvider();
+  await localeProvider.loadLocale();
+
   runApp(MyApp(
     isAuthenticated: isAuthenticated,
     hasProfile: hasProfile,
+    localeProvider: localeProvider,
   ));
 }
 
 class MyApp extends StatefulWidget {
   final bool isAuthenticated;
   final bool hasProfile;
+  final LocaleProvider localeProvider;
 
   const MyApp({
     super.key,
     required this.isAuthenticated,
     required this.hasProfile,
+    required this.localeProvider,
   });
 
   @override
@@ -45,39 +51,10 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final _localeProvider = LocaleProvider();
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeLocale();
-  }
-
-  Future<void> _initializeLocale() async {
-    await _localeProvider.loadLocale();
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
-      );
-    }
-    
     return ChangeNotifierProvider.value(
-      value: _localeProvider,
+      value: widget.localeProvider,
       child: Consumer<LocaleProvider>(
         builder: (_, provider, __) => MaterialApp(
           locale: provider.locale,

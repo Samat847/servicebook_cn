@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/locale_provider.dart';
+import '../l10n/app_localizations.dart';
 import 'dashboard_screen.dart';
 import 'home_screen.dart';
 import 'partners_screen.dart'; // ← заменили map_screen.dart
@@ -21,12 +24,15 @@ class _MainScreenState extends State<MainScreen> {
     const UserProfileScreen(),
   ];
 
-  final List<String> _titles = [
-    'Главная',
-    'Мой гараж',
-    'Карта',
-    'Профиль',
-  ];
+  List<String> _getTitles(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return [
+      l10n?.dashboardTitle ?? 'Главная',
+      l10n?.garage ?? 'Мой гараж',
+      l10n?.mapTitle ?? 'Карта',
+      l10n?.profile ?? 'Профиль',
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -36,6 +42,9 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final titles = _getTitles(context);
+
     return Scaffold(
       body: _screens[_selectedIndex],
       bottomNavigationBar: Container(
@@ -66,26 +75,26 @@ class _MainScreenState extends State<MainScreen> {
             unselectedItemColor: Colors.grey,
             selectedLabelStyle: const TextStyle(fontSize: 12),
             unselectedLabelStyle: const TextStyle(fontSize: 12),
-            items: const [
+            items: [
               BottomNavigationBarItem(
-                icon: Icon(Icons.home_outlined),
-                activeIcon: Icon(Icons.home),
-                label: 'Главная',
+                icon: const Icon(Icons.home_outlined),
+                activeIcon: const Icon(Icons.home),
+                label: l10n?.dashboardTitle ?? 'Главная',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.directions_car_outlined),
-                activeIcon: Icon(Icons.directions_car),
-                label: 'Авто',
+                icon: const Icon(Icons.directions_car_outlined),
+                activeIcon: const Icon(Icons.directions_car),
+                label: l10n?.garage ?? 'Авто',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.map_outlined),
-                activeIcon: Icon(Icons.map),
-                label: 'Карта',
+                icon: const Icon(Icons.map_outlined),
+                activeIcon: const Icon(Icons.map),
+                label: l10n?.mapTitle ?? 'Карта',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.person_outlined),
-                activeIcon: Icon(Icons.person),
-                label: 'Профиль',
+                icon: const Icon(Icons.person_outlined),
+                activeIcon: const Icon(Icons.person),
+                label: l10n?.profile ?? 'Профиль',
               ),
             ],
           ),
