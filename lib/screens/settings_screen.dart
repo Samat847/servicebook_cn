@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
 import 'profile_edit_screen.dart';
 import 'security_settings_screen.dart';
 import 'data_management_screen.dart';
@@ -12,6 +12,8 @@ import 'terms_of_service_screen.dart';
 import 'about_screen.dart';
 import 'language_settings_screen.dart';
 import '../services/car_storage.dart';
+import '../providers/locale_provider.dart';
+import '../l10n/app_localizations.dart';
 import 'auth_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -25,7 +27,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
   bool _darkModeEnabled = false;
   bool _autoBackupEnabled = true;
-  String _selectedLanguage = 'ru';
   String _appVersion = '';
 
   @override
@@ -41,17 +42,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
+  String _getLanguageName(String code) {
+    switch (code) {
+      case 'ru':
+        return 'Русский';
+      case 'en':
+        return 'English';
+      case 'kk':
+        return 'Қазақша';
+      default:
+        return 'Русский';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final localeProvider = Provider.of<LocaleProvider>(context);
+    
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0.5,
-        title: const Text(
-          'Настройки',
-          style: TextStyle(
+        title: Text(
+          l10n?.settings ?? 'Настройки',
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
             color: Colors.black,
@@ -63,27 +80,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           const SizedBox(height: 8),
 
-          // Личные данные
-          _buildSectionHeader('Личные данные'),
+          _buildSectionHeader(l10n?.personalData ?? 'Личные данные'),
           _buildSettingsTile(
             icon: Icons.person_outline,
-            title: 'Редактировать профиль',
-            subtitle: 'Имя, город, телефон',
+            title: l10n?.edit ?? 'Редактировать профиль',
+            subtitle: l10n?.personalDataSubtitle ?? 'Имя, город, телефон',
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileEditScreen())).then((_) => setState(() {})),
           ),
           _buildSettingsTile(
             icon: Icons.lock_outline,
-            title: 'Безопасность',
-            subtitle: 'Пароль, two-factor auth',
+            title: l10n?.security ?? 'Безопасность',
+            subtitle: l10n?.securitySubtitle ?? 'Пароль, двухфакторная аутентификация',
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SecuritySettingsScreen())),
           ),
           const SizedBox(height: 8),
 
-          // Приложения
-          _buildSectionHeader('Приложение'),
+          _buildSectionHeader(l10n?.settings ?? 'Приложение'),
           _buildSwitchTile(
             icon: Icons.notifications_outlined,
-            title: 'Уведомления',
+            title: l10n?.notifications ?? 'Уведомления',
             subtitle: 'Push-уведомления о сервисах',
             value: _notificationsEnabled,
             onChanged: (value) {
@@ -94,7 +109,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           _buildSwitchTile(
             icon: Icons.dark_mode_outlined,
-            title: 'Темная тема',
+            title: l10n?.darkMode ?? 'Темная тема',
             subtitle: 'Включить темный режим',
             value: _darkModeEnabled,
             onChanged: (value) {
@@ -105,13 +120,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           _buildSettingsTile(
             icon: Icons.language_outlined,
-            title: 'Язык',
-            subtitle: _selectedLanguage == 'ru' ? 'Русский' : 'English',
+            title: l10n?.language ?? 'Язык',
+            subtitle: _getLanguageName(localeProvider.locale.languageCode),
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LanguageSettingsScreen())),
           ),
           _buildSwitchTile(
             icon: Icons.cloud_upload_outlined,
-            title: 'Автоматическое резервное копирование',
+            title: l10n?.backup ?? 'Автоматическое резервное копирование',
             subtitle: 'Сохранять данные в облако',
             value: _autoBackupEnabled,
             onChanged: (value) {
@@ -122,40 +137,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 8),
 
-          // Данные
-          _buildSectionHeader('Данные'),
+          _buildSectionHeader(l10n?.dataManagement ?? 'Данные'),
           _buildSettingsTile(
             icon: Icons.storage_outlined,
-            title: 'Управление данными',
-            subtitle: 'Экспорт, импорт, очистка',
+            title: l10n?.dataManagement ?? 'Управление данными',
+            subtitle: l10n?.dataManagementSubtitle ?? 'Экспорт, импорт, очистка',
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DataManagementScreen())),
           ),
           _buildSettingsTile(
             icon: Icons.backup_outlined,
-            title: 'Резервные копии',
-            subtitle: 'История бэкапов',
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BackupSettingsScreen())),
+            title: l10n?.backup ?? 'Резервные копии',
+            subtitle: l10n?.backupSubtitle ?? 'История бэкапов',
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(l10n?.backupComingSoon ?? 'Функция резервного копирования появится позже'),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 8),
 
-          // Поддержка
-          _buildSectionHeader('Поддержка'),
+          _buildSectionHeader(l10n?.support ?? 'Поддержка'),
           _buildSettingsTile(
             icon: Icons.help_outline,
-            title: 'Помощь и FAQ',
-            subtitle: 'Часто задаваемые вопросы',
+            title: l10n?.helpAndFaq ?? 'Помощь и FAQ',
+            subtitle: l10n?.helpAndFaqSubtitle ?? 'Часто задаваемые вопросы',
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HelpAndFaqScreen())),
           ),
           _buildSettingsTile(
             icon: Icons.contact_support_outlined,
-            title: 'Связаться с поддержкой',
-            subtitle: 'Написать нам',
+            title: l10n?.support ?? 'Связаться с поддержкой',
+            subtitle: l10n?.supportSubtitle ?? 'Написать нам',
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SupportScreen())),
           ),
           _buildSettingsTile(
             icon: Icons.star_outline,
-            title: 'Оценить приложение',
-            subtitle: 'Оставить отзыв в магазине',
+            title: l10n?.about ?? 'Оценить приложение',
+            subtitle: l10n?.rateAppSubtitle ?? 'Оставить отзыв в магазине',
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Спасибо за ваш отзыв!')),
@@ -164,27 +183,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 8),
 
-          // О приложении
-          _buildSectionHeader('О приложении'),
+          _buildSectionHeader(l10n?.about ?? 'О приложении'),
           _buildSettingsTile(
             icon: Icons.description_outlined,
-            title: 'Политика конфиденциальности',
+            title: l10n?.privacyPolicy ?? 'Политика конфиденциальности',
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen())),
           ),
           _buildSettingsTile(
             icon: Icons.gavel_outlined,
-            title: 'Условия использования',
+            title: l10n?.termsOfService ?? 'Условия использования',
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsOfServiceScreen())),
           ),
           _buildSettingsTile(
             icon: Icons.info_outline,
-            title: 'О приложении',
-            subtitle: 'Версия $_appVersion',
+            title: l10n?.about ?? 'О приложении',
+            subtitle: '${l10n?.version ?? 'Версия'} $_appVersion',
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen())),
           ),
           const SizedBox(height: 8),
 
-          // Выйти
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Card(
@@ -196,7 +213,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: ListTile(
                 leading: Icon(Icons.logout, color: Colors.red.shade700),
                 title: Text(
-                  'Выйти из аккаунта',
+                  l10n?.logoutButton ?? 'Выйти из аккаунта',
                   style: TextStyle(
                     color: Colors.red.shade700,
                     fontWeight: FontWeight.w500,
@@ -295,52 +312,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showLanguageDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Выберите язык'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<String>(
-              title: const Text('Русский'),
-              value: 'ru',
-              groupValue: _selectedLanguage,
-              onChanged: (value) {
-                setState(() {
-                  _selectedLanguage = value!;
-                });
-                Navigator.pop(context);
-              },
-            ),
-            RadioListTile<String>(
-              title: const Text('English'),
-              value: 'en',
-              groupValue: _selectedLanguage,
-              onChanged: (value) {
-                setState(() {
-                  _selectedLanguage = value!;
-                });
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   void _showLogoutDialog() {
+    final l10n = AppLocalizations.of(context);
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Выйти из аккаунта?'),
-        content: const Text('Все данные будут сохранены на устройстве.'),
+        title: Text(l10n?.logoutConfirm ?? 'Выйти из аккаунта?'),
+        content: Text(l10n?.logoutConfirmText ?? 'Все данные будут сохранены на устройстве.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Отмена'),
+            child: Text(l10n?.cancel ?? 'Отмена'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -357,42 +340,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Выйти'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAboutDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('ServiceBook'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Приложение для учета обслуживания автомобилей',
-              style: TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Версия: $_appVersion',
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              '© 2024 ServiceBook',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Закрыть'),
+            child: Text(l10n?.logout ?? 'Выйти'),
           ),
         ],
       ),

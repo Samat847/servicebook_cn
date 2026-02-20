@@ -34,6 +34,12 @@ dependencies:
 
   # State management
   provider: ^6.1.0
+  
+  # Crypto for password hashing
+  crypto: ^3.0.3
+  
+  # URL launcher for email
+  url_launcher: ^6.2.0
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../services/car_storage.dart';
+import '../services/auth_service.dart';
+import '../l10n/app_localizations.dart';
+import 'auth_screen.dart';
 
 class SecuritySettingsScreen extends StatefulWidget {
   const SecuritySettingsScreen({super.key});
@@ -12,10 +14,25 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
   bool _biometricEnabled = false;
   bool _twoFactorEnabled = false;
   bool _isLoading = false;
+  bool _hasPasswordAuth = false;
+  String? _lastPasswordChange;
 
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPasswordAuth();
+  }
+
+  Future<void> _checkPasswordAuth() async {
+    final hasPassword = await AuthService.isPasswordAuth();
+    setState(() {
+      _hasPasswordAuth = hasPassword;
+    });
+  }
 
   @override
   void dispose() {
@@ -26,43 +43,60 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
   }
 
   Future<void> _changePassword() async {
+    final l10n = AppLocalizations.of(context);
+    
     if (_currentPasswordController.text.isEmpty ||
         _newPasswordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Заполните все поля')),
+        SnackBar(content: Text(l10n?.error ?? 'Заполните все поля')),
       );
       return;
     }
 
     if (_newPasswordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Пароли не совпадают')),
+        SnackBar(content: Text(l10n?.passwordsDoNotMatch ?? 'Пароли не совпадают')),
       );
       return;
     }
 
     if (_newPasswordController.text.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Пароль должен содержать минимум 6 символов')),
+        SnackBar(content: Text(l10n?.passwordTooShort ?? 'Пароль должен содержать минимум 6 символов')),
       );
       return;
     }
 
     setState(() => _isLoading = true);
 
-    // TODO: Implement actual password change
-    await Future.delayed(const Duration(seconds: 1));
+    final success = await AuthService.changePassword(
+      _currentPasswordController.text,
+      _newPasswordController.text,
+    );
 
     setState(() => _isLoading = false);
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Пароль успешно изменен')),
-      );
-      _currentPasswordController.clear();
-      _newPasswordController.clear();
-      _confirmPasswordController.clear();
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n?.passwordChanged ?? 'Пароль успешно изменён'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _currentPasswordController.clear();
+        _newPasswordController.clear();
+        _confirmPasswordController.clear();
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n?.oldPasswordIncorrect ?? 'Неверный текущий пароль'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -70,7 +104,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Изменить пароль'),
+        title: Text(AppLocalizations.of(context)?.changePassword ?? 'Изменить пароль'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -78,7 +112,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
               controller: _currentPasswordController,
               obscureText: true,
               decoration: InputDecoration(
-                labelText: 'Текущий пароль',
+                labelText: AppLocalizations.of(context)?.currentPassword ?? 'Текущий пароль',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -89,7 +123,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
               controller: _newPasswordController,
               obscureText: true,
               decoration: InputDecoration(
-                labelText: 'Новый пароль',
+                labelText: AppLocalizations.of(context)?.newPassword ?? 'Новый пароль',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -100,7 +134,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
               controller: _confirmPasswordController,
               obscureText: true,
               decoration: InputDecoration(
-                labelText: 'Подтвердите пароль',
+                labelText: AppLocalizations.of(context)?.confirmPassword ?? 'Подтвердите пароль',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -111,7 +145,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Отмена'),
+            child: Text(AppLocalizations.of(context)?.cancel ?? 'Отмена'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -122,7 +156,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
               backgroundColor: const Color(0xFF1E88E5),
               foregroundColor: Colors.white,
             ),
-            child: const Text('Сохранить'),
+            child: Text(AppLocalizations.of(context)?.save ?? 'Сохранить'),
           ),
         ],
       ),
@@ -131,15 +165,17 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0.5,
-        title: const Text(
-          'Безопасность',
-          style: TextStyle(
+        title: Text(
+          l10n?.security ?? 'Безопасность',
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
             color: Colors.black,
@@ -153,19 +189,24 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
               children: [
                 const SizedBox(height: 16),
 
-                // Password section
-                _buildSectionHeader('Пароль'),
+                _buildSectionHeader(l10n?.personalData ?? 'Пароль'),
                 _buildSettingsTile(
                   icon: Icons.lock_outline,
-                  title: 'Изменить пароль',
-                  subtitle: 'Последнее изменение: никогда',
-                  onTap: _showChangePasswordDialog,
+                  title: l10n?.changePassword ?? 'Изменить пароль',
+                  subtitle: _lastPasswordChange ?? (l10n?.securitySubtitle ?? 'Последнее изменение: никогда'),
+                  enabled: _hasPasswordAuth,
+                  onTap: _hasPasswordAuth ? _showChangePasswordDialog : () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Смена пароля доступна только для пользователей, вошедших по логину и паролю'),
+                      ),
+                    );
+                  },
                 ),
 
                 const SizedBox(height: 8),
 
-                // Biometric section
-                _buildSectionHeader('Биометрия'),
+                _buildSectionHeader(l10n?.notifications ?? 'Биометрия'),
                 _buildSwitchTile(
                   icon: Icons.fingerprint,
                   title: 'Биометрический вход',
@@ -177,9 +218,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                     });
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(
-                          value ? 'Биометрия включена' : 'Биометрия отключена',
-                        ),
+                        content: Text(value ? 'Биометрия включена' : 'Биометрия отключена'),
                       ),
                     );
                   },
@@ -187,7 +226,6 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
 
                 const SizedBox(height: 8),
 
-                // Two-factor authentication
                 _buildSectionHeader('Двухфакторная аутентификация'),
                 _buildSwitchTile(
                   icon: Icons.security,
@@ -210,7 +248,6 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
 
                 const SizedBox(height: 8),
 
-                // Sessions
                 _buildSectionHeader('Активные сессии'),
                 _buildSettingsTile(
                   icon: Icons.devices,
@@ -223,7 +260,6 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
 
                 const SizedBox(height: 8),
 
-                // Danger zone
                 _buildSectionHeader('Опасная зона'),
                 Card(
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -278,6 +314,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     required String title,
     String? subtitle,
     required VoidCallback onTap,
+    bool enabled = true,
   }) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -287,10 +324,14 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        leading: Icon(icon, color: Colors.blue.shade700),
+        leading: Icon(icon, color: enabled ? Colors.blue.shade700 : Colors.grey),
         title: Text(
           title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          style: TextStyle(
+            fontSize: 16, 
+            fontWeight: FontWeight.w500,
+            color: enabled ? Colors.black : Colors.grey,
+          ),
         ),
         subtitle: subtitle != null
             ? Text(
@@ -303,7 +344,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
           size: 16,
           color: Colors.grey.shade400,
         ),
-        onTap: onTap,
+        onTap: enabled ? onTap : null,
       ),
     );
   }
@@ -380,11 +421,15 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
             child: const Text('Отмена'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Все сессии завершены')),
-              );
+              await AuthService.logout();
+              if (mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const AuthScreen()),
+                  (route) => false,
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
