@@ -4,6 +4,34 @@ import 'verification_screen.dart';
 import 'login_screen.dart';
 import '../l10n/app_localizations.dart';
 
+class _PhoneMaskFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digitsOnly = newValue.text.replaceAll(RegExp(r'\D'), '');
+
+    final limitedDigits =
+        digitsOnly.length > 10 ? digitsOnly.substring(0, 10) : digitsOnly;
+
+    final buffer = StringBuffer();
+    for (int i = 0; i < limitedDigits.length; i++) {
+      if (i == 0) buffer.write('(');
+      if (i == 3) buffer.write(') ');
+      if (i == 6) buffer.write('-');
+      if (i == 8) buffer.write('-');
+      buffer.write(limitedDigits[i]);
+    }
+
+    final formatted = buffer.toString();
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
+
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
 
@@ -13,9 +41,7 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   final TextEditingController _phoneController = TextEditingController();
-  String _phoneError = '';
-  bool _isPhoneValid = false;
-  
+  bool _touched = false;
   int _loginType = 0;
 
   @override
@@ -32,84 +58,36 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   void _onPhoneChanged() {
-    final digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
+    setState(() {});
+  }
+
+  int _getDigitCount() {
+    return _phoneController.text.replaceAll(RegExp(r'\D'), '').length;
+  }
+
+  bool get _isPhoneValid => _getDigitCount() == 10;
+
+  String? get _phoneError {
+    if (!_touched) return null;
+    if (_isPhoneValid) return null;
+    final l10n = AppLocalizations.of(context);
+    return l10n?.phoneMustHave10Digits ?? 'Номер должен содержать 10 цифр после +7';
+  }
+
+  void _onGetCodePressed() {
     setState(() {
-      if (digits.length == 10) {
-        _isPhoneValid = true;
-        _phoneError = '';
-      } else {
-        _isPhoneValid = false;
-        if (_phoneController.text.isNotEmpty && digits.isNotEmpty) {
-          _phoneError = AppLocalizations.of(context)?.phoneMustHave10Digits ?? 'Номер должен содержать 10 цифр после +7';
-        } else {
-          _phoneError = '';
-        }
-      }
+      _touched = true;
     });
-  }
 
-  String _formatPhoneNumber(String text) {
-    final digits = text.replaceAll(RegExp(r'\D'), '');
-    if (digits.isEmpty) return '';
-    
-    String result = '+7';
-    if (digits.length > 1) {
-      result += ' (${digits.substring(1, digits.length > 4 ? 4 : digits.length)}';
-    }
-    if (digits.length > 4) {
-      result += ') ${digits.substring(4, digits.length > 7 ? 7 : digits.length)}';
-    }
-    if (digits.length > 7) {
-      result += '-${digits.substring(7, digits.length > 9 ? 9 : digits.length)}';
-    }
-    if (digits.length > 9) {
-      result += '-${digits.substring(9)}';
-    }
-    return result;
-  }
+    if (!_isPhoneValid) return;
 
-  void _onPhoneInputChanged(String value) {
-    final digits = value.replaceAll(RegExp(r'\D'), '');
-    
-    // Limit to 10 digits only
-    if (digits.length > 10) {
-      return;
-    }
-    
-    final formatted = _formatPhoneNumber(digits);
-    if (formatted != _phoneController.text) {
-      _phoneController.value = TextEditingValue(
-        text: formatted,
-        selection: TextSelection.collapsed(offset: formatted.length),
-      );
-    }
-  }
-
-  void _onGetCodePressed(BuildContext context) {
-    final phone = _phoneController.text.trim();
-    
-    if (phone.isEmpty) {
-      setState(() {
-        _phoneError = AppLocalizations.of(context)?.enterPhoneNumber ?? 'Введите номер телефона';
-        _isPhoneValid = false;
-      });
-      return;
-    }
-
-    final digits = phone.replaceAll(RegExp(r'\D'), '');
-    if (digits.length != 10) {
-      setState(() {
-        _phoneError = AppLocalizations.of(context)?.phoneMustHave10Digits ?? 'Номер должен содержать 10 цифр после +7';
-        _isPhoneValid = false;
-      });
-      return;
-    }
+    final digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
 
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => VerificationScreen(
-          contactInfo: '+$digits',
+          contactInfo: '+7$digits',
           isEmail: false,
         ),
       ),
@@ -119,7 +97,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -129,7 +107,6 @@ class _AuthScreenState extends State<AuthScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 40),
-                
                 Text(
                   l10n?.loginTitle ?? 'Вход',
                   style: const TextStyle(
@@ -138,52 +115,46 @@ class _AuthScreenState extends State<AuthScreen> {
                     color: Colors.black,
                   ),
                 ),
-                
                 const SizedBox(height: 10),
-                
                 Text(
                   l10n?.loginSubtitle ?? 'Войдите в аккаунт для продолжения',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
+                  style: const TextStyle(fontSize: 16, color: Colors.grey),
                 ),
-                
                 const SizedBox(height: 40),
-                
                 Row(
                   children: [
                     _buildTabButton(
-                      l10n?.byPhone ?? 'По номеру телефона', 
-                      _loginType == 0, 
-                      () => setState(() => _loginType = 0)
+                      l10n?.byPhone ?? 'По номеру телефона',
+                      _loginType == 0,
+                      () => setState(() {
+                        _loginType = 0;
+                        _touched = false;
+                        _phoneController.clear();
+                      }),
                     ),
                     const SizedBox(width: 20),
                     _buildTabButton(
-                      l10n?.byPassword ?? 'По логину и паролю', 
-                      _loginType == 1, 
-                      () => setState(() => _loginType = 1)
+                      l10n?.byPassword ?? 'По логину и паролю',
+                      _loginType == 1,
+                      () => setState(() => _loginType = 1),
                     ),
                   ],
                 ),
-                
                 const SizedBox(height: 20),
-                
                 if (_loginType == 0)
                   _buildPhoneInput(l10n)
                 else
                   _buildPasswordLoginButton(l10n),
-                
                 const SizedBox(height: 30),
-                
                 if (_loginType == 0)
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _isPhoneValid ? () => _onGetCodePressed(context) : null,
+                      onPressed: _onGetCodePressed,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: _isPhoneValid ? Colors.blue : Colors.grey.shade300,
+                        backgroundColor:
+                            _isPhoneValid ? Colors.blue : Colors.grey.shade300,
                         disabledBackgroundColor: Colors.grey.shade300,
                       ),
                       child: Text(
@@ -191,23 +162,20 @@ class _AuthScreenState extends State<AuthScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: _isPhoneValid ? Colors.white : Colors.grey.shade600,
+                          color: _isPhoneValid
+                              ? Colors.white
+                              : Colors.grey.shade600,
                         ),
                       ),
                     ),
                   ),
-                
                 const SizedBox(height: 30),
-                
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
                     'Нажимая кнопку, вы соглашаетесь с Условиями использования и Политикой конфиденциальности.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ),
               ],
@@ -245,6 +213,9 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Widget _buildPhoneInput(AppLocalizations? l10n) {
+    final error = _phoneError;
+    final hasError = error != null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -252,7 +223,8 @@ class _AuthScreenState extends State<AuthScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
             border: Border.all(
-              color: _phoneError.isNotEmpty ? Colors.red : Colors.grey.shade300,
+              color: hasError ? Colors.red : Colors.grey.shade300,
+              width: hasError ? 1.5 : 1.0,
             ),
             borderRadius: BorderRadius.circular(8),
           ),
@@ -260,22 +232,31 @@ class _AuthScreenState extends State<AuthScreen> {
             children: [
               const Text(
                 '+7',
-                style: TextStyle(fontSize: 16, color: Colors.black),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Expanded(
                 child: TextField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
+                    _PhoneMaskFormatter(),
                   ],
                   decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText: l10n?.phoneHint ?? 'Введите номер телефона',
+                    hintText: '(___) ___-__-__',
                     hintStyle: const TextStyle(color: Colors.grey),
                   ),
-                  onChanged: _onPhoneInputChanged,
+                  onChanged: (_) {
+                    if (!_touched && _getDigitCount() > 0) {
+                      setState(() => _touched = true);
+                    }
+                  },
                 ),
               ),
               if (_isPhoneValid)
@@ -283,17 +264,18 @@ class _AuthScreenState extends State<AuthScreen> {
             ],
           ),
         ),
-        if (_phoneError.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 8, left: 4),
-            child: Text(
-              _phoneError,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.red,
-              ),
-            ),
-          ),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          child: hasError
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 6, left: 4),
+                  child: Text(
+                    error,
+                    style: const TextStyle(fontSize: 12, color: Colors.red),
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
       ],
     );
   }
@@ -339,10 +321,7 @@ class _AuthScreenState extends State<AuthScreen> {
           },
           child: Text(
             l10n?.register ?? 'Регистрация',
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.blue,
-            ),
+            style: const TextStyle(fontSize: 16, color: Colors.blue),
           ),
         ),
       ],
