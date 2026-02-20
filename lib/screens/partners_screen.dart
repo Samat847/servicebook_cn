@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/models.dart';
 
 class PartnersScreen extends StatefulWidget {
@@ -12,12 +11,6 @@ class PartnersScreen extends StatefulWidget {
 }
 
 class _PartnersScreenState extends State<PartnersScreen> {
-  GoogleMapController? _mapController;
-  static const CameraPosition _initialCameraPosition = CameraPosition(
-    target: LatLng(55.751244, 37.618423),
-    zoom: 12,
-  );
-
   String _selectedType = 'all';
   bool _onlyPartners = true;
 
@@ -69,24 +62,6 @@ class _PartnersScreenState extends State<PartnersScreen> {
     },
   ];
 
-  Set<Marker> _buildMarkers() {
-    return _partners.map((p) {
-      return Marker(
-        markerId: MarkerId(p['id']),
-        position: LatLng(p['lat'], p['lng']),
-        infoWindow: InfoWindow(
-          title: p['name'],
-          snippet: '${p['distance']} • ${p['rating']} ★',
-        ),
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-          p['type'] == 'service'
-              ? BitmapDescriptor.hueBlue
-              : BitmapDescriptor.hueOrange,
-        ),
-      );
-    }).toSet();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,7 +89,6 @@ class _PartnersScreenState extends State<PartnersScreen> {
       ),
       body: Column(
         children: [
-          // Фильтры
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             color: Colors.white,
@@ -174,22 +148,8 @@ class _PartnersScreenState extends State<PartnersScreen> {
             ),
           ),
 
-          // Карта
-          Container(
-            height: 200,
-            width: double.infinity,
-            child: GoogleMap(
-              initialCameraPosition: _initialCameraPosition,
-              onMapCreated: (controller) => _mapController = controller,
-              markers: _buildMarkers(),
-              myLocationEnabled: false,
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: false,
-              compassEnabled: true,
-            ),
-          ),
+          _buildMapPlaceholder(),
 
-          // Заголовок списка
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Row(
@@ -207,7 +167,6 @@ class _PartnersScreenState extends State<PartnersScreen> {
             ),
           ),
 
-          // Список партнеров
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -219,7 +178,6 @@ class _PartnersScreenState extends State<PartnersScreen> {
             ),
           ),
 
-          // Нижняя плашка
           Padding(
             padding: const EdgeInsets.all(16),
             child: SizedBox(
@@ -248,6 +206,107 @@ class _PartnersScreenState extends State<PartnersScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildMapPlaceholder() {
+    return Container(
+      height: 200,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8F0E9),
+        border: Border(
+          top: BorderSide(color: Colors.grey.shade200),
+          bottom: BorderSide(color: Colors.grey.shade200),
+        ),
+      ),
+      child: Stack(
+        children: [
+          CustomPaint(
+            size: const Size(double.infinity, 200),
+            painter: _MapGridPainter(),
+          ),
+          ..._buildMapMarkers(),
+          Positioned(
+            bottom: 8,
+            right: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.12),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.map_outlined, size: 14, color: Colors.grey.shade600),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Карта партнёров',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildMapMarkers() {
+    final positions = [
+      const Offset(0.5, 0.45),
+      const Offset(0.25, 0.7),
+      const Offset(0.72, 0.3),
+    ];
+
+    return List.generate(_partners.length, (i) {
+      final p = _partners[i];
+      final pos = positions[i];
+      final isService = p['type'] == 'service';
+      final color = isService ? Colors.blue : Colors.orange;
+
+      return Positioned(
+        left: MediaQuery.of(context).size.width * pos.dx - 16,
+        top: 200 * pos.dy - 32,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                p['name'] as String,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+              ),
+            ),
+            const SizedBox(height: 2),
+            Icon(Icons.location_pin, color: color, size: 28),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildFilterChip(String label, String value, IconData icon) {
@@ -392,7 +451,7 @@ class _PartnersScreenState extends State<PartnersScreen> {
               ElevatedButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Каталог запчастей в разработке')),
+                    const SnackBar(content: Text('Каталог запчастей в разработке')),
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -416,7 +475,7 @@ class _PartnersScreenState extends State<PartnersScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Запись на сервис'),
+        title: const Text('Запись на сервис'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -459,4 +518,43 @@ class _PartnersScreenState extends State<PartnersScreen> {
       ),
     );
   }
+}
+
+class _MapGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final roadPaint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 6
+      ..style = PaintingStyle.stroke;
+
+    final minorRoadPaint = Paint()
+      ..color = Colors.white.withOpacity(0.6)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    final blockPaint = Paint()
+      ..color = const Color(0xFFD4E8D4)
+      ..style = PaintingStyle.fill;
+
+    final rect1 = Rect.fromLTWH(size.width * 0.05, size.height * 0.05, size.width * 0.25, size.height * 0.3);
+    final rect2 = Rect.fromLTWH(size.width * 0.35, size.height * 0.05, size.width * 0.2, size.height * 0.25);
+    final rect3 = Rect.fromLTWH(size.width * 0.6, size.height * 0.1, size.width * 0.3, size.height * 0.35);
+    final rect4 = Rect.fromLTWH(size.width * 0.1, size.height * 0.5, size.width * 0.3, size.height * 0.4);
+    final rect5 = Rect.fromLTWH(size.width * 0.5, size.height * 0.55, size.width * 0.35, size.height * 0.35);
+
+    for (final rect in [rect1, rect2, rect3, rect4, rect5]) {
+      canvas.drawRRect(RRect.fromRectAndRadius(rect, const Radius.circular(4)), blockPaint);
+    }
+
+    canvas.drawLine(Offset(0, size.height * 0.4), Offset(size.width, size.height * 0.4), roadPaint);
+    canvas.drawLine(Offset(size.width * 0.45, 0), Offset(size.width * 0.45, size.height), roadPaint);
+
+    canvas.drawLine(Offset(0, size.height * 0.65), Offset(size.width, size.height * 0.65), minorRoadPaint);
+    canvas.drawLine(Offset(size.width * 0.2, 0), Offset(size.width * 0.2, size.height), minorRoadPaint);
+    canvas.drawLine(Offset(size.width * 0.75, 0), Offset(size.width * 0.75, size.height), minorRoadPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
