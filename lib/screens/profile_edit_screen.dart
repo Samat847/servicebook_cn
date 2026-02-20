@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/models.dart';
 import '../services/car_storage.dart';
+import '../l10n/app_localizations.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   const ProfileEditScreen({super.key});
@@ -65,16 +66,18 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   Future<void> _saveProfile() async {
+    final l10n = AppLocalizations.of(context);
+    
     if (_nameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Введите имя')),
+        SnackBar(content: Text(l10n?.nameHint ?? 'Введите имя')),
       );
       return;
     }
 
     if (_cityController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Введите город')),
+        SnackBar(content: Text(l10n?.cityHint ?? 'Введите город')),
       );
       return;
     }
@@ -97,8 +100,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Профиль сохранен'),
+          SnackBar(
+            content: Text(l10n?.profileSaved ?? 'Профиль сохранён'),
             backgroundColor: Colors.green,
           ),
         );
@@ -122,15 +125,17 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0.5,
-        title: const Text(
-          'Личные данные',
-          style: TextStyle(
+        title: Text(
+          l10n?.personalData ?? 'Личные данные',
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
             color: Colors.black,
@@ -168,7 +173,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       ),
                     ),
 
-                  // Photo upload
                   Center(
                     child: GestureDetector(
                       onTap: _pickPhoto,
@@ -235,7 +239,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Form fields
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                     padding: const EdgeInsets.all(20),
@@ -247,14 +250,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       children: [
                         _buildTextField(
                           controller: _nameController,
-                          label: 'Имя *',
-                          hint: 'Введите ваше имя',
+                          label: l10n?.name ?? 'Имя',
+                          hint: l10n?.nameHint ?? 'Введите ваше имя',
                           icon: Icons.person,
                         ),
                         const SizedBox(height: 16),
                         _buildTextField(
                           controller: _emailController,
-                          label: 'Email',
+                          label: l10n?.email ?? 'Email',
                           hint: 'email@example.com',
                           icon: Icons.email,
                           keyboardType: TextInputType.emailAddress,
@@ -262,7 +265,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         const SizedBox(height: 16),
                         _buildTextField(
                           controller: _phoneController,
-                          label: 'Телефон',
+                          label: l10n?.phone ?? 'Телефон',
                           hint: '+7 (999) 123-45-67',
                           icon: Icons.phone,
                           keyboardType: TextInputType.phone,
@@ -270,8 +273,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         const SizedBox(height: 16),
                         _buildTextField(
                           controller: _cityController,
-                          label: 'Город *',
-                          hint: 'Москва',
+                          label: l10n?.city ?? 'Город',
+                          hint: l10n?.cityHint ?? 'Москва',
                           icon: Icons.location_city,
                         ),
                       ],
@@ -279,7 +282,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Buttons
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: SizedBox(
@@ -303,9 +305,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Text(
-                                'Сохранить',
-                                style: TextStyle(
+                            : Text(
+                                l10n?.save ?? 'Сохранить',
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -318,9 +320,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   Center(
                     child: TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text(
-                        'Отменить',
-                        style: TextStyle(
+                      child: Text(
+                        l10n?.cancel ?? 'Отменить',
+                        style: const TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
                         ),
