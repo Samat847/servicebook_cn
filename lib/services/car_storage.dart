@@ -28,6 +28,7 @@ class CarStorage {
     
     final carStrings = cars.map((c) => c.toJsonString()).toList();
     await prefs.setStringList(_carsKey, carStrings);
+    debugPrint('[CarStorage] Car saved: ${car.displayName} (Total: ${cars.length})');
   }
 
   static Future<void> saveCars(List<Car> cars) async {
@@ -48,6 +49,7 @@ class CarStorage {
           debugPrint('[CarStorage] Failed to parse car: $e\nRaw: $s');
         }
       }
+      debugPrint('[CarStorage] Loaded ${result.length} cars');
       return result;
     } catch (e) {
       debugPrint('[CarStorage] loadCarsList error: $e');

@@ -46,6 +46,7 @@ class Expense {
   final String? comment;
   final bool hasReceipt;
   final String? receiptPhotoPath;
+  final List<String> photoPaths;
   final bool isConfirmed;
   final DateTime createdAt;
 
@@ -62,6 +63,7 @@ class Expense {
     this.comment,
     this.hasReceipt = false,
     this.receiptPhotoPath,
+    this.photoPaths = const [],
     this.isConfirmed = false,
     required this.createdAt,
   });
@@ -80,6 +82,7 @@ class Expense {
       comment: json['comment'] as String?,
       hasReceipt: json['hasReceipt'] as bool? ?? false,
       receiptPhotoPath: json['receiptPhotoPath'] as String?,
+      photoPaths: (json['photoPaths'] as List<dynamic>?)?.cast<String>() ?? [],
       isConfirmed: json['isConfirmed'] as bool? ?? false,
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
@@ -99,6 +102,7 @@ class Expense {
       'comment': comment,
       'hasReceipt': hasReceipt,
       'receiptPhotoPath': receiptPhotoPath,
+      'photoPaths': photoPaths,
       'isConfirmed': isConfirmed,
       'createdAt': createdAt.toIso8601String(),
     };
@@ -117,6 +121,7 @@ class Expense {
     String? comment,
     bool? hasReceipt,
     String? receiptPhotoPath,
+    List<String>? photoPaths,
     bool? isConfirmed,
     DateTime? createdAt,
   }) {
@@ -133,6 +138,7 @@ class Expense {
       comment: comment ?? this.comment,
       hasReceipt: hasReceipt ?? this.hasReceipt,
       receiptPhotoPath: receiptPhotoPath ?? this.receiptPhotoPath,
+      photoPaths: photoPaths ?? this.photoPaths,
       isConfirmed: isConfirmed ?? this.isConfirmed,
       createdAt: createdAt ?? this.createdAt,
     );
