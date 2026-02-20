@@ -3,86 +3,21 @@ import 'package:provider/provider.dart';
 import '../providers/locale_provider.dart';
 import '../l10n/app_localizations.dart';
 
-class LanguageSettingsScreen extends StatefulWidget {
+class LanguageSettingsScreen extends StatelessWidget {
   const LanguageSettingsScreen({super.key});
 
-  @override
-  State<LanguageSettingsScreen> createState() => _LanguageSettingsScreenState();
-}
-
-class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
-  String _selectedLanguage = 'ru';
-
-  final List<Map<String, dynamic>> _languages = [
-    {
-      'code': 'ru',
-      'name': 'Русский',
-      'nativeName': 'Русский',
-      'flag': '🇷🇺',
-    },
-    {
-      'code': 'en',
-      'name': 'English',
-      'nativeName': 'English',
-      'flag': '🇬🇧',
-    },
-    {
-      'code': 'kk',
-      'name': 'Қазақша',
-      'nativeName': 'Қазақша',
-      'flag': '🇰🇿',
-    },
+  static const List<Map<String, String>> _languages = [
+    {'code': 'ru', 'name': 'Русский', 'flag': '🇷🇺'},
+    {'code': 'en', 'name': 'English', 'flag': '🇬🇧'},
+    {'code': 'kk', 'name': 'Қазақша', 'flag': '🇰🇿'},
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    // Load the current language from provider
-    _loadCurrentLanguage();
-  }
-
-  void _loadCurrentLanguage() {
-    final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
-    setState(() {
-      _selectedLanguage = localeProvider.locale.languageCode;
-    });
-  }
-
-  Future<void> _selectLanguage(String code) async {
-    if (_selectedLanguage == code) return; // Don't update if same language is selected
-    
-    setState(() {
-      _selectedLanguage = code;
-    });
-
-    final localeProvider = context.read<LocaleProvider>();
-    
-    // Set the new locale, which will trigger a rebuild of the MaterialApp
-    await localeProvider.setLocale(Locale(code));
-
-    final selectedLang = _languages.firstWhere((lang) => lang['code'] == code);
-    
-    // Show success message
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${AppLocalizations.of(context)?.languageChanged ?? 'Язык изменён на'} ${selectedLang['nativeName']}'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-      
-      // Close the screen after a short delay to let the user see the success message
-      await Future.delayed(const Duration(seconds: 1));
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    
+    final localeProvider = context.watch<LocaleProvider>();
+    final selectedCode = localeProvider.locale.languageCode;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -103,27 +38,21 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
-
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               l10n?.selectLanguage ?? 'Выберите язык интерфейса',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
             ),
           ),
-
           const SizedBox(height: 16),
-
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: _languages.length,
               itemBuilder: (context, index) {
                 final language = _languages[index];
-                final isSelected = _selectedLanguage == language['code'];
+                final isSelected = selectedCode == language['code'];
 
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
@@ -154,28 +83,19 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
                       ),
                       child: Center(
                         child: Text(
-                          language['flag'] as String,
+                          language['flag']!,
                           style: const TextStyle(fontSize: 24),
                         ),
                       ),
                     ),
                     title: Text(
-                      language['name'] as String,
+                      language['name']!,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: isSelected
                             ? const Color(0xFF1E88E5)
                             : Colors.black,
-                      ),
-                    ),
-                    subtitle: Text(
-                      language['nativeName'] as String,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isSelected
-                            ? const Color(0xFF1E88E5).withOpacity(0.8)
-                            : Colors.grey.shade600,
                       ),
                     ),
                     trailing: isSelected
@@ -187,7 +107,11 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
                             Icons.radio_button_unchecked,
                             color: Colors.grey.shade400,
                           ),
-                    onTap: () => _selectLanguage(language['code'] as String),
+                    onTap: () {
+                      context
+                          .read<LocaleProvider>()
+                          .setLocale(Locale(language['code']!));
+                    },
                   ),
                 );
               },
