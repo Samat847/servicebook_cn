@@ -79,10 +79,10 @@ class _MyAppState extends State<MyApp> {
               elevation: 0,
               centerTitle: true,
             ),
-            cardTheme: CardTheme(
+            cardTheme: const CardThemeData(
               elevation: 2,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.all(Radius.circular(16)),
               ),
             ),
           ),
