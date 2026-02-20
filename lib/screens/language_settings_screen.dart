@@ -37,19 +37,32 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
   @override
   void initState() {
     super.initState();
+    // Load the current language from provider
+    _loadCurrentLanguage();
+  }
+
+  void _loadCurrentLanguage() {
     final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
-    _selectedLanguage = localeProvider.locale.languageCode;
+    setState(() {
+      _selectedLanguage = localeProvider.locale.languageCode;
+    });
   }
 
   Future<void> _selectLanguage(String code) async {
+    if (_selectedLanguage == code) return; // Don't update if same language is selected
+    
     setState(() {
       _selectedLanguage = code;
     });
 
     final localeProvider = context.read<LocaleProvider>();
+    
+    // Set the new locale, which will trigger a rebuild of the MaterialApp
     await localeProvider.setLocale(Locale(code));
 
     final selectedLang = _languages.firstWhere((lang) => lang['code'] == code);
+    
+    // Show success message
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -57,7 +70,12 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
           duration: const Duration(seconds: 2),
         ),
       );
-      Navigator.of(context).pop();
+      
+      // Close the screen after a short delay to let the user see the success message
+      await Future.delayed(const Duration(seconds: 1));
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
     }
   }
 

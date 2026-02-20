@@ -34,7 +34,7 @@ class _AuthScreenState extends State<AuthScreen> {
   void _onPhoneChanged() {
     final digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
     setState(() {
-      if (digits.length >= 10) {
+      if (digits.length == 10) {
         _isPhoneValid = true;
         _phoneError = '';
       } else {
@@ -70,15 +70,18 @@ class _AuthScreenState extends State<AuthScreen> {
 
   void _onPhoneInputChanged(String value) {
     final digits = value.replaceAll(RegExp(r'\D'), '');
-    if (digits.length <= 10) {
-      final formatted = _formatPhoneNumber(digits);
-      if (formatted != _phoneController.text) {
-        final selection = _phoneController.selection;
-        _phoneController.value = TextEditingValue(
-          text: formatted,
-          selection: TextSelection.collapsed(offset: formatted.length),
-        );
-      }
+    
+    // Limit to 10 digits only
+    if (digits.length > 10) {
+      return;
+    }
+    
+    final formatted = _formatPhoneNumber(digits);
+    if (formatted != _phoneController.text) {
+      _phoneController.value = TextEditingValue(
+        text: formatted,
+        selection: TextSelection.collapsed(offset: formatted.length),
+      );
     }
   }
 
@@ -94,7 +97,7 @@ class _AuthScreenState extends State<AuthScreen> {
     }
 
     final digits = phone.replaceAll(RegExp(r'\D'), '');
-    if (digits.length < 10) {
+    if (digits.length != 10) {
       setState(() {
         _phoneError = AppLocalizations.of(context)?.phoneMustHave10Digits ?? 'Номер должен содержать 10 цифр после +7';
         _isPhoneValid = false;
@@ -266,7 +269,6 @@ class _AuthScreenState extends State<AuthScreen> {
                   keyboardType: TextInputType.phone,
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(10),
                   ],
                   decoration: InputDecoration(
                     border: InputBorder.none,

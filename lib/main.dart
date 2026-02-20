@@ -46,15 +46,36 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final _localeProvider = LocaleProvider();
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _localeProvider.loadLocale();
+    _initializeLocale();
+  }
+
+  Future<void> _initializeLocale() async {
+    await _localeProvider.loadLocale();
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
+    
     return ChangeNotifierProvider.value(
       value: _localeProvider,
       child: Consumer<LocaleProvider>(
