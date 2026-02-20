@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/locale_provider.dart';
+import '../l10n/app_localizations.dart';
 
 class LanguageSettingsScreen extends StatefulWidget {
   const LanguageSettingsScreen({super.key});
@@ -25,12 +26,17 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
       'nativeName': 'English',
       'flag': '🇬🇧',
     },
+    {
+      'code': 'kk',
+      'name': 'Қазақша',
+      'nativeName': 'Қазақша',
+      'flag': '🇰🇿',
+    },
   ];
 
   @override
   void initState() {
     super.initState();
-    // Загружаем текущий язык из провайдера
     final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
     _selectedLanguage = localeProvider.locale.languageCode;
   }
@@ -40,7 +46,6 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
       _selectedLanguage = code;
     });
 
-    // Получаем provider и меняем locale
     final localeProvider = context.read<LocaleProvider>();
     await localeProvider.setLocale(Locale(code));
 
@@ -48,24 +53,27 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Язык изменен на ${selectedLang['nativeName']}'),
+          content: Text('${AppLocalizations.of(context)?.languageChanged ?? 'Язык изменён на'} ${selectedLang['nativeName']}'),
           duration: const Duration(seconds: 2),
         ),
       );
+      Navigator.of(context).pop();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0.5,
-        title: const Text(
-          'Язык',
-          style: TextStyle(
+        title: Text(
+          l10n?.selectLanguageTitle ?? 'Язык',
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
             color: Colors.black,
@@ -81,7 +89,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              'Выберите язык интерфейса',
+              l10n?.selectLanguage ?? 'Выберите язык интерфейса',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade600,
@@ -91,7 +99,6 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
 
           const SizedBox(height: 16),
 
-          // Language list
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -166,32 +173,6 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
                   ),
                 );
               },
-            ),
-          ),
-
-          // Info card
-          Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.blue.shade100),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.info_outline, color: Colors.blue.shade700),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Изменение языка вступит в силу после перезапуска приложения',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.blue.shade800,
-                    ),
-                  ),
-                ),
-              ],
             ),
           ),
         ],

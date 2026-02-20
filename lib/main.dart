@@ -62,7 +62,7 @@ class _MyAppState extends State<MyApp> {
           locale: provider.locale,
           debugShowCheckedModeBanner: false,
           title: 'ServiceBook',
-          supportedLocales: const [Locale('ru'), Locale('en')],
+          supportedLocales: const [Locale('ru'), Locale('en'), Locale('kk')],
           localizationsDelegates: const [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
