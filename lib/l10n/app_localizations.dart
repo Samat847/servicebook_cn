@@ -128,6 +128,57 @@ class AppLocalizations {
       'appAuthor': '© 2024 ServiceBook',
       'dashboardTitle': 'Главная',
       'mapTitle': 'Карта',
+      
+      // DashboardScreen
+      'myGarage': 'Мой Гараж',
+      'noCars': 'Нет автомобилей',
+      'noCarsDescription': 'Добавьте автомобиль в разделе "Гараж"',
+      'dataLoadingError': 'Ошибка загрузки данных:',
+      'retry': 'Повторить',
+      'monthlyExpenses': 'Расходы в месяце',
+      'nextService': 'Следующее ТО',
+      'inKM': 'через {km} км',
+      'addRecord': 'Добавить запись',
+      'sellReport': 'Отчет для продажи',
+      'partnersStos': 'Партнеры СТО',
+      'analytics': 'Аналитика',
+      'workHistory': 'История работ',
+      'all': 'Все',
+      'allRecords': 'Все записи',
+      'partnerStos': 'Партнерские СТО',
+      'bookOnline': 'Запишись онлайн и получи скидку 10%',
+      'withDiscount': '-{discount}',
+      'allDocuments': 'Документы',
+      'personalData': 'Личные данные',
+      'manageData': 'Управление данными',
+      'backups': 'Резервные копии',
+      'helpFaq': 'Помощь и FAQ',
+      'contactSupport': 'Связаться с поддержкой',
+      'rateApp': 'Оценить приложение',
+      'privacyPolicy': 'Политика конфиденциальности',
+      'termsOfUse': 'Условия использования',
+      'aboutApp': 'О приложении',
+      'bonusPoints': 'Бонусные баллы',
+      'refill': 'Пополнить',
+      'myGarageTitle': 'Мой гараж',
+      'addButton': 'Добавить',
+      'driverLicense': 'Водительское удостоверение',
+      'validUntil2028': 'Действительно до 2028',
+      'osago': 'ОСАГО',
+      'valid': 'Действует',
+      'sts': 'СТС',
+      'unlimited': 'Бессрочно',
+      'settingsTitle': 'Настройки',
+      'premium': 'Premium',
+      'noCarsInGarage': 'В гараже пока нет автомобилей',
+      'addCar': 'Добавить автомобиль',
+      'withoutPlate': 'Без номера',
+      'inDays': 'Через {km} км',
+      'openAppStore': 'Открываем магазин приложений...',
+      'logout': 'Выйти',
+      'applyingLanguage': 'Применяем язык...',
+      'languageChangedTo': 'Язык изменён на',
+      'languageChangeError': 'Ошибка смены языка:',
     },
     'en': {
       'appTitle': 'ServiceBook',
@@ -245,6 +296,57 @@ class AppLocalizations {
       'appAuthor': '© 2024 ServiceBook',
       'dashboardTitle': 'Home',
       'mapTitle': 'Map',
+      
+      // DashboardScreen
+      'myGarage': 'My Garage',
+      'noCars': 'No Cars',
+      'noCarsDescription': 'Add a car in the Garage section',
+      'dataLoadingError': 'Data loading error:',
+      'retry': 'Retry',
+      'monthlyExpenses': 'Monthly Expenses',
+      'nextService': 'Next Service',
+      'inKM': 'in {km} km',
+      'addRecord': 'Add Record',
+      'sellReport': 'Sell Report',
+      'partnersStos': 'Service Partners',
+      'analytics': 'Analytics',
+      'workHistory': 'Work History',
+      'all': 'All',
+      'allRecords': 'All Records',
+      'partnerStos': 'Partner Service Centers',
+      'bookOnline': 'Book online and get 10% discount',
+      'withDiscount': '-{discount}',
+      'allDocuments': 'Documents',
+      'personalData': 'Personal Data',
+      'manageData': 'Data Management',
+      'backups': 'Backups',
+      'helpFaq': 'Help & FAQ',
+      'contactSupport': 'Contact Support',
+      'rateApp': 'Rate App',
+      'privacyPolicy': 'Privacy Policy',
+      'termsOfUse': 'Terms of Use',
+      'aboutApp': 'About App',
+      'bonusPoints': 'Bonus Points',
+      'refill': 'Top Up',
+      'myGarageTitle': 'My Garage',
+      'addButton': 'Add',
+      'driverLicense': 'Driver License',
+      'validUntil2028': 'Valid until 2028',
+      'osago': 'OSAGO',
+      'valid': 'Valid',
+      'sts': 'STS',
+      'unlimited': 'Unlimited',
+      'settingsTitle': 'Settings',
+      'premium': 'Premium',
+      'noCarsInGarage': 'No cars in garage yet',
+      'addCar': 'Add Car',
+      'withoutPlate': 'No plate',
+      'inDays': 'In {km} km',
+      'openAppStore': 'Opening app store...',
+      'logout': 'Logout',
+      'applyingLanguage': 'Applying language...',
+      'languageChangedTo': 'Language changed to',
+      'languageChangeError': 'Language change error:',
     },
     'kk': {
       'appTitle': 'ServiceBook',
@@ -362,6 +464,57 @@ class AppLocalizations {
       'appAuthor': '© 2024 ServiceBook',
       'dashboardTitle': 'Басты бет',
       'mapTitle': 'Карта',
+      
+      // DashboardScreen
+      'myGarage': 'Менің гаражым',
+      'noCars': 'Автокөлік жоқ',
+      'noCarsDescription': 'Гараж бөлімінде автокөлік қосыңыз',
+      'dataLoadingError': 'Деректерді жүктеу қатесі:',
+      'retry': 'Қайталау',
+      'monthlyExpenses': 'Ай шығыстары',
+      'nextService': 'Келесі қызмет көрсету',
+      'inKM': '{km} км ішінде',
+      'addRecord': 'Жазба қосу',
+      'sellReport': 'Сату есебі',
+      'partnersStos': 'Серіктес СТО',
+      'analytics': 'Аналитика',
+      'workHistory': 'Жұмыс тарихы',
+      'all': 'Барлығы',
+      'allRecords': 'Барлық жазбалар',
+      'partnerStos': 'Серіктес СТО-лар',
+      'bookOnline': 'Онлайн жазылып 10% жеңілдік алыңыз',
+      'withDiscount': '-{discount}',
+      'allDocuments': 'Құжаттар',
+      'personalData': 'Жеке деректер',
+      'manageData': 'Деректерді басқару',
+      'backups': 'Қорғаныш көшірмелер',
+      'helpFaq': 'Көмек мен FAQ',
+      'contactSupport': 'Қолдау көрсету',
+      'rateApp': 'Қолданбаны бағалау',
+      'privacyPolicy': 'Құпиялылық саясаты',
+      'termsOfUse': 'Қолдану шарттары',
+      'aboutApp': 'Қолданба туралы',
+      'bonusPoints': 'Бонус ұпайлары',
+      'refill': 'Толтыру',
+      'myGarageTitle': 'Менің гаражым',
+      'addButton': 'Қосу',
+      'driverLicense': 'Жүргізуші куəлігі',
+      'validUntil2028': '2028 жылға дейін жарамды',
+      'osago': 'ОСАГО',
+      'valid': 'Жарамды',
+      'sts': 'СТС',
+      'unlimited': ' мерзімсіз',
+      'settingsTitle': 'Баптаулар',
+      'premium': 'Премиум',
+      'noCarsInGarage': 'Гаражда әлі автокөлік жоқ',
+      'addCar': 'Автокөлік қосу',
+      'withoutPlate': 'Нөмірсіз',
+      'inDays': '{km} км ішінде',
+      'openAppStore': 'Қолданба дүкенін ашып жатыр...',
+      'logout': 'Шығу',
+      'applyingLanguage': 'Тілді қолдану...',
+      'languageChangedTo': 'Тіл өзгертілді',
+      'languageChangeError': 'Тіл өзгерту қатесі:',
     },
   };
   
@@ -481,6 +634,55 @@ class AppLocalizations {
   String get appAuthor => _localizedValues[locale.languageCode]?['appAuthor'] ?? _localizedValues['ru']!['appAuthor']!;
   String get dashboardTitle => _localizedValues[locale.languageCode]?['dashboardTitle'] ?? _localizedValues['ru']!['dashboardTitle']!;
   String get mapTitle => _localizedValues[locale.languageCode]?['mapTitle'] ?? _localizedValues['ru']!['mapTitle']!;
+  
+  // DashboardScreen
+  String get myGarage => _localizedValues[locale.languageCode]?['myGarage'] ?? _localizedValues['ru']!['myGarage']!;
+  String get noCars => _localizedValues[locale.languageCode]?['noCars'] ?? _localizedValues['ru']!['noCars']!;
+  String get noCarsDescription => _localizedValues[locale.languageCode]?['noCarsDescription'] ?? _localizedValues['ru']!['noCarsDescription']!;
+  String get dataLoadingError => _localizedValues[locale.languageCode]?['dataLoadingError'] ?? _localizedValues['ru']!['dataLoadingError']!;
+  String get retry => _localizedValues[locale.languageCode]?['retry'] ?? _localizedValues['ru']!['retry']!;
+  String get monthlyExpenses => _localizedValues[locale.languageCode]?['monthlyExpenses'] ?? _localizedValues['ru']!['monthlyExpenses']!;
+  String get nextService => _localizedValues[locale.languageCode]?['nextService'] ?? _localizedValues['ru']!['nextService']!;
+  String inKM(int km) => _localizedValues[locale.languageCode]?['inKM']?.replaceAll('{km}', km.toString()) ?? _localizedValues['ru']!['inKM']!.replaceAll('{km}', km.toString());
+  String get addRecord => _localizedValues[locale.languageCode]?['addRecord'] ?? _localizedValues['ru']!['addRecord']!;
+  String get sellReport => _localizedValues[locale.languageCode]?['sellReport'] ?? _localizedValues['ru']!['sellReport']!;
+  String get partnersStos => _localizedValues[locale.languageCode]?['partnersStos'] ?? _localizedValues['ru']!['partnersStos']!;
+  String get analytics => _localizedValues[locale.languageCode]?['analytics'] ?? _localizedValues['ru']!['analytics']!;
+  String get workHistory => _localizedValues[locale.languageCode]?['workHistory'] ?? _localizedValues['ru']!['workHistory']!;
+  String get all => _localizedValues[locale.languageCode]?['all'] ?? _localizedValues['ru']!['all']!;
+  String get allRecords => _localizedValues[locale.languageCode]?['allRecords'] ?? _localizedValues['ru']!['allRecords']!;
+  String get partnerStos => _localizedValues[locale.languageCode]?['partnerStos'] ?? _localizedValues['ru']!['partnerStos']!;
+  String get bookOnline => _localizedValues[locale.languageCode]?['bookOnline'] ?? _localizedValues['ru']!['bookOnline']!;
+  String withDiscount(String discount) => _localizedValues[locale.languageCode]?['withDiscount']?.replaceAll('{discount}', discount) ?? _localizedValues['ru']!['withDiscount']!.replaceAll('{discount}', discount);
+  String get allDocuments => _localizedValues[locale.languageCode]?['allDocuments'] ?? _localizedValues['ru']!['allDocuments']!;
+  String get personalData => _localizedValues[locale.languageCode]?['personalData'] ?? _localizedValues['ru']!['personalData']!;
+  String get manageData => _localizedValues[locale.languageCode]?['manageData'] ?? _localizedValues['ru']!['manageData']!;
+  String get backups => _localizedValues[locale.languageCode]?['backups'] ?? _localizedValues['ru']!['backups']!;
+  String get helpFaq => _localizedValues[locale.languageCode]?['helpFaq'] ?? _localizedValues['ru']!['helpFaq']!;
+  String get contactSupport => _localizedValues[locale.languageCode]?['contactSupport'] ?? _localizedValues['ru']!['contactSupport']!;
+  String get rateApp => _localizedValues[locale.languageCode]?['rateApp'] ?? _localizedValues['ru']!['rateApp']!;
+  String get privacyPolicy => _localizedValues[locale.languageCode]?['privacyPolicy'] ?? _localizedValues['ru']!['privacyPolicy']!;
+  String get termsOfUse => _localizedValues[locale.languageCode]?['termsOfUse'] ?? _localizedValues['ru']!['termsOfUse']!;
+  String get aboutApp => _localizedValues[locale.languageCode]?['aboutApp'] ?? _localizedValues['ru']!['aboutApp']!;
+  String get bonusPoints => _localizedValues[locale.languageCode]?['bonusPoints'] ?? _localizedValues['ru']!['bonusPoints']!;
+  String get refill => _localizedValues[locale.languageCode]?['refill'] ?? _localizedValues['ru']!['refill']!;
+  String get myGarageTitle => _localizedValues[locale.languageCode]?['myGarageTitle'] ?? _localizedValues['ru']!['myGarageTitle']!;
+  String get addButton => _localizedValues[locale.languageCode]?['addButton'] ?? _localizedValues['ru']!['addButton']!;
+  String get driverLicense => _localizedValues[locale.languageCode]?['driverLicense'] ?? _localizedValues['ru']!['driverLicense']!;
+  String get validUntil2028 => _localizedValues[locale.languageCode]?['validUntil2028'] ?? _localizedValues['ru']!['validUntil2028']!;
+  String get osago => _localizedValues[locale.languageCode]?['osago'] ?? _localizedValues['ru']!['osago']!;
+  String get valid => _localizedValues[locale.languageCode]?['valid'] ?? _localizedValues['ru']!['valid']!;
+  String get sts => _localizedValues[locale.languageCode]?['sts'] ?? _localizedValues['ru']!['sts']!;
+  String get unlimited => _localizedValues[locale.languageCode]?['unlimited'] ?? _localizedValues['ru']!['unlimited']!;
+  String get settingsTitle => _localizedValues[locale.languageCode]?['settingsTitle'] ?? _localizedValues['ru']!['settingsTitle']!;
+  String get premium => _localizedValues[locale.languageCode]?['premium'] ?? _localizedValues['ru']!['premium']!;
+  String get noCarsInGarage => _localizedValues[locale.languageCode]?['noCarsInGarage'] ?? _localizedValues['ru']!['noCarsInGarage']!;
+  String get withoutPlate => _localizedValues[locale.languageCode]?['withoutPlate'] ?? _localizedValues['ru']!['withoutPlate']!;
+  String inDays(int km) => _localizedValues[locale.languageCode]?['inDays']?.replaceAll('{km}', km.toString()) ?? _localizedValues['ru']!['inDays']!.replaceAll('{km}', km.toString());
+  String get openAppStore => _localizedValues[locale.languageCode]?['openAppStore'] ?? _localizedValues['ru']!['openAppStore']!;
+  String get applyingLanguage => _localizedValues[locale.languageCode]?['applyingLanguage'] ?? _localizedValues['ru']!['applyingLanguage']!;
+  String get languageChangedTo => _localizedValues[locale.languageCode]?['languageChangedTo'] ?? _localizedValues['ru']!['languageChangedTo']!;
+  String get languageChangeError => _localizedValues[locale.languageCode]?['languageChangeError'] ?? _localizedValues['ru']!['languageChangeError']!;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

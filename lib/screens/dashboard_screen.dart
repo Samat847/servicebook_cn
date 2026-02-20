@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/car_storage.dart';
+import '../l10n/app_localizations.dart';
 import 'add_service_screen.dart';
 import 'sell_report_screen.dart';
 import 'partners_screen.dart';
@@ -102,7 +103,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Ошибка загрузки данных: $e';
+        _errorMessage = '${l10n?.dataLoadingError} $e';
       });
     }
   }
@@ -122,6 +123,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     if (_isLoading) {
       return const Scaffold(
         body: Center(
@@ -145,7 +148,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _loadData,
-                child: const Text('Повторить'),
+                child: Text(l10n?.retry ?? 'Повторить'),
               ),
             ],
           ),
@@ -162,12 +165,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Icon(Icons.directions_car_outlined, size: 64, color: Colors.grey[300]),
               const SizedBox(height: 16),
               Text(
-                'Нет автомобилей',
+                l10n?.noCars ?? 'Нет автомобилей',
                 style: TextStyle(fontSize: 18, color: Colors.grey[600]),
               ),
               const SizedBox(height: 8),
               Text(
-                'Добавьте автомобиль в разделе "Гараж"',
+                l10n?.noCarsDescription ?? 'Добавьте автомобиль в разделе "Гараж"',
                 style: TextStyle(color: Colors.grey[500]),
               ),
             ],
@@ -188,9 +191,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               pinned: true,
               backgroundColor: Colors.white,
               elevation: 1,
-              title: const Text(
-                'Мой Гараж',
-                style: TextStyle(
+              title: Text(
+                l10n?.myGarage ?? 'Мой Гараж',
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
@@ -269,7 +272,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                _selectedCar!.plate ?? 'Без номера',
+                                _selectedCar!.plate ?? (l10n?.withoutPlate ?? 'Без номера'),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
@@ -302,7 +305,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Расходы в месяце',
+                                  l10n?.monthlyExpenses ?? 'Расходы в месяце',
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.grey.shade600,
@@ -335,7 +338,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Следующее ТО',
+                                  l10n?.nextService ?? 'Следующее ТО',
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.grey.shade600,
@@ -343,7 +346,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'через $_nextServiceMileage км',
+                                  l10n?.inKM(_nextServiceMileage) ?? 'через $_nextServiceMileage км',
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -368,7 +371,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _buildQuickAction(
                         key: const Key('add_service_button'),
                         icon: Icons.add_circle_outline,
-                        label: 'Добавить запись',
+                        label: l10n?.addRecord ?? 'Добавить запись',
                         color: Colors.blue,
                         onTap: () async {
                           final result = await Navigator.push(
@@ -385,7 +388,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _buildQuickAction(
                         key: const Key('sell_report_button'),
                         icon: Icons.description_outlined,
-                        label: 'Отчет для продажи',
+                        label: l10n?.sellReport ?? 'Отчет для продажи',
                         color: Colors.green,
                         onTap: () {
                           Navigator.push(
@@ -399,7 +402,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _buildQuickAction(
                         key: const Key('partners_button'),
                         icon: Icons.car_repair_outlined,
-                        label: 'Партнеры СТО',
+                        label: l10n?.partnersStos ?? 'Партнеры СТО',
                         color: Colors.orange,
                         onTap: () {
                           Navigator.push(
@@ -413,7 +416,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _buildQuickAction(
                         key: const Key('analytics_button'),
                         icon: Icons.insights_outlined,
-                        label: 'Аналитика',
+                        label: l10n?.analytics ?? 'Аналитика',
                         color: Colors.purple,
                         onTap: () {
                           Navigator.push(
@@ -436,9 +439,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'История работ',
-                          style: TextStyle(
+                        Text(
+                          l10n?.workHistory ?? 'История работ',
+                          style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
@@ -452,9 +455,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                             );
                           },
-                          child: const Text(
-                            'Все',
-                            style: TextStyle(
+                          Text(
+                            l10n?.all ?? 'Все',
+                            style: const TextStyle(
                               fontSize: 14,
                               color: Colors.blue,
                             ),
@@ -536,7 +539,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         );
                       },
-                      child: const Text('Все записи'),
+                      child: Text(l10n?.allRecords ?? 'Все записи'),
                     ),
                   ),
                 ],
@@ -547,16 +550,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Партнерские СТО',
-                        style: TextStyle(
+                      Text(
+                        l10n?.partnerStos ?? 'Партнерские СТО',
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Запишись онлайн и получи скидку 10%',
+                        l10n?.bookOnline ?? 'Запишись онлайн и получи скидку 10%',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey.shade600,
@@ -665,7 +668,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                 ),
                                 child: Text(
-                                  '-${station['discount']}',
+                                  l10n?.withDiscount(station['discount'].toString()) ?? '-${station['discount']}',
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
