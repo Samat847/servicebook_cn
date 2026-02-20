@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'verification_screen.dart';
+import 'login_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -10,24 +13,92 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  bool _isEmailLogin = false;
+  String _phoneError = '';
+  bool _isPhoneValid = false;
+  
+  int _loginType = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _phoneController.addListener(_onPhoneChanged);
+  }
+
+  @override
+  void dispose() {
+    _phoneController.removeListener(_onPhoneChanged);
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  void _onPhoneChanged() {
+    final digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
+    setState(() {
+      if (digits.length >= 10) {
+        _isPhoneValid = true;
+        _phoneError = '';
+      } else {
+        _isPhoneValid = false;
+        if (_phoneController.text.isNotEmpty && digits.isNotEmpty) {
+          _phoneError = AppLocalizations.of(context)?.phoneMustHave10Digits ?? 'Номер должен содержать 10 цифр после +7';
+        } else {
+          _phoneError = '';
+        }
+      }
+    });
+  }
+
+  String _formatPhoneNumber(String text) {
+    final digits = text.replaceAll(RegExp(r'\D'), '');
+    if (digits.isEmpty) return '';
+    
+    String result = '+7';
+    if (digits.length > 1) {
+      result += ' (${digits.substring(1, digits.length > 4 ? 4 : digits.length)}';
+    }
+    if (digits.length > 4) {
+      result += ') ${digits.substring(4, digits.length > 7 ? 7 : digits.length)}';
+    }
+    if (digits.length > 7) {
+      result += '-${digits.substring(7, digits.length > 9 ? 9 : digits.length)}';
+    }
+    if (digits.length > 9) {
+      result += '-${digits.substring(9)}';
+    }
+    return result;
+  }
+
+  void _onPhoneInputChanged(String value) {
+    final digits = value.replaceAll(RegExp(r'\D'), '');
+    if (digits.length <= 10) {
+      final formatted = _formatPhoneNumber(digits);
+      if (formatted != _phoneController.text) {
+        final selection = _phoneController.selection;
+        _phoneController.value = TextEditingValue(
+          text: formatted,
+          selection: TextSelection.collapsed(offset: formatted.length),
+        );
+      }
+    }
+  }
 
   void _onGetCodePressed(BuildContext context) {
-    final contact = _isEmailLogin 
-        ? _emailController.text.trim()
-        : _phoneController.text.trim();
+    final phone = _phoneController.text.trim();
+    
+    if (phone.isEmpty) {
+      setState(() {
+        _phoneError = AppLocalizations.of(context)?.enterPhoneNumber ?? 'Введите номер телефона';
+        _isPhoneValid = false;
+      });
+      return;
+    }
 
-    if (contact.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            _isEmailLogin 
-                ? 'Введите email' 
-                : 'Введите номер телефона',
-          ),
-        ),
-      );
+    final digits = phone.replaceAll(RegExp(r'\D'), '');
+    if (digits.length < 10) {
+      setState(() {
+        _phoneError = AppLocalizations.of(context)?.phoneMustHave10Digits ?? 'Номер должен содержать 10 цифр после +7';
+        _isPhoneValid = false;
+      });
       return;
     }
 
@@ -35,8 +106,8 @@ class _AuthScreenState extends State<AuthScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => VerificationScreen(
-          contactInfo: contact,
-          isEmail: _isEmailLogin,
+          contactInfo: '+$digits',
+          isEmail: false,
         ),
       ),
     );
@@ -44,6 +115,8 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -54,9 +127,9 @@ class _AuthScreenState extends State<AuthScreen> {
               children: [
                 const SizedBox(height: 40),
                 
-                const Text(
-                  'Вход',
-                  style: TextStyle(
+                Text(
+                  l10n?.loginTitle ?? 'Вход',
+                  style: const TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
@@ -65,9 +138,9 @@ class _AuthScreenState extends State<AuthScreen> {
                 
                 const SizedBox(height: 10),
                 
-                const Text(
-                  'Введите номер телефона или email, чтобы войти или создать аккаунт.',
-                  style: TextStyle(
+                Text(
+                  l10n?.loginSubtitle ?? 'Войдите в аккаунт для продолжения',
+                  style: const TextStyle(
                     fontSize: 16,
                     color: Colors.grey,
                   ),
@@ -77,43 +150,49 @@ class _AuthScreenState extends State<AuthScreen> {
                 
                 Row(
                   children: [
-                    _buildTabButton('Номер телефона', !_isEmailLogin, () {
-                      setState(() => _isEmailLogin = false);
-                    }),
+                    _buildTabButton(
+                      l10n?.byPhone ?? 'По номеру телефона', 
+                      _loginType == 0, 
+                      () => setState(() => _loginType = 0)
+                    ),
                     const SizedBox(width: 20),
-                    _buildTabButton('Войти по почте', _isEmailLogin, () {
-                      setState(() => _isEmailLogin = true);
-                    }),
+                    _buildTabButton(
+                      l10n?.byPassword ?? 'По логину и паролю', 
+                      _loginType == 1, 
+                      () => setState(() => _loginType = 1)
+                    ),
                   ],
                 ),
                 
                 const SizedBox(height: 20),
                 
-                if (!_isEmailLogin)
-                  _buildPhoneInput()
+                if (_loginType == 0)
+                  _buildPhoneInput(l10n)
                 else
-                  _buildEmailInput(),
+                  _buildPasswordLoginButton(l10n),
                 
                 const SizedBox(height: 30),
                 
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => _onGetCodePressed(context),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Colors.blue,
-                    ),
-                    child: const Text(
-                      'Получить код',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                if (_loginType == 0)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isPhoneValid ? () => _onGetCodePressed(context) : null,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: _isPhoneValid ? Colors.blue : Colors.grey.shade300,
+                        disabledBackgroundColor: Colors.grey.shade300,
+                      ),
+                      child: Text(
+                        l10n?.getCode ?? 'Получить код',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: _isPhoneValid ? Colors.white : Colors.grey.shade600,
+                        ),
                       ),
                     ),
                   ),
-                ),
                 
                 const SizedBox(height: 30),
                 
@@ -144,10 +223,12 @@ class _AuthScreenState extends State<AuthScreen> {
           Text(
             text,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
               color: isActive ? Colors.blue : Colors.grey,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 5),
           Container(
@@ -160,48 +241,109 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
-  Widget _buildPhoneInput() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          const Text(
-            '+7',
-            style: TextStyle(fontSize: 16, color: Colors.black),
+  Widget _buildPhoneInput(AppLocalizations? l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: _phoneError.isNotEmpty ? Colors.red : Colors.grey.shade300,
+            ),
+            borderRadius: BorderRadius.circular(8),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: TextField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                hintText: 'Введите номер телефона',
-                hintStyle: TextStyle(color: Colors.grey),
+          child: Row(
+            children: [
+              const Text(
+                '+7',
+                style: TextStyle(fontSize: 16, color: Colors.black),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: TextField(
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(10),
+                  ],
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: l10n?.phoneHint ?? 'Введите номер телефона',
+                    hintStyle: const TextStyle(color: Colors.grey),
+                  ),
+                  onChanged: _onPhoneInputChanged,
+                ),
+              ),
+              if (_isPhoneValid)
+                const Icon(Icons.check_circle, color: Colors.green, size: 20),
+            ],
+          ),
+        ),
+        if (_phoneError.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, left: 4),
+            child: Text(
+              _phoneError,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.red,
               ),
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 
-  Widget _buildEmailInput() {
-    return TextField(
-      controller: _emailController,
-      keyboardType: TextInputType.emailAddress,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+  Widget _buildPasswordLoginButton(AppLocalizations? l10n) {
+    return Column(
+      children: [
+        const SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const LoginScreen(),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              backgroundColor: Colors.blue,
+            ),
+            child: Text(
+              l10n?.login ?? 'Войти',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
         ),
-        hintText: 'Введите email',
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      ),
+        const SizedBox(height: 16),
+        TextButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const LoginScreen(isRegistration: true),
+              ),
+            );
+          },
+          child: Text(
+            l10n?.register ?? 'Регистрация',
+            style: const TextStyle(
+              fontSize: 16,
+              color: Colors.blue,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'profile_screen.dart';
 import '../services/car_storage.dart';
+import '../l10n/app_localizations.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String contactInfo;
@@ -83,6 +84,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
   }
 
   void _verifyCode(String code) {
+    final l10n = AppLocalizations.of(context);
+    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -90,7 +93,6 @@ class _VerificationScreenState extends State<VerificationScreen> {
     );
     
     Future.delayed(const Duration(seconds: 1), () async {
-      // Сохраняем статус авторизации и контактные данные
       await CarStorage.saveAuthStatus(true);
       await CarStorage.saveContact(widget.contactInfo, widget.isEmail);
       
@@ -103,7 +105,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(widget.isEmail ? 'Email подтвержден!' : 'Номер подтвержден!'),
+          content: Text(widget.isEmail 
+            ? (l10n?.emailConfirmed ?? 'Email подтверждён!') 
+            : (l10n?.phoneConfirmed ?? 'Номер подтверждён!')),
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
         ),
@@ -115,9 +119,14 @@ class _VerificationScreenState extends State<VerificationScreen> {
     if (_secondsRemaining > 0) return;
     setState(() => _secondsRemaining = 60);
     _startTimer();
+    
+    final l10n = AppLocalizations.of(context);
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(widget.isEmail ? 'Код отправлен повторно' : 'SMS отправлено повторно'),
+        content: Text(widget.isEmail 
+          ? (l10n?.codeResent ?? 'Код отправлен повторно') 
+          : (l10n?.smsResent ?? 'SMS отправлено повторно')),
         backgroundColor: Colors.blue,
         duration: const Duration(seconds: 2),
       ),
@@ -165,13 +174,15 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(widget.isEmail ? 'Подтверждение email' : 'Подтверждение номера'),
+        title: Text(widget.isEmail ? 'Подтверждение email' : (l10n?.confirmPhone ?? 'Подтверждение номера')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -188,14 +199,14 @@ class _VerificationScreenState extends State<VerificationScreen> {
             children: [
               const SizedBox(height: 10),
               Text(
-                widget.isEmail ? 'Подтвердите email' : 'Подтвердите номер',
+                widget.isEmail ? 'Подтвердите email' : (l10n?.confirmPhone ?? 'Подтвердите номер'),
                 style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
               Text(
                 widget.isEmail
                     ? 'Введите 6-значный код из письма на ${widget.contactInfo}'
-                    : 'Введите код из SMS на $_maskedContact',
+                    : '${l10n?.confirmPhoneText ?? 'Введите код из SMS на'} $_maskedContact',
                 style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 40),
@@ -208,7 +219,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'Повторная отправка через',
+                      l10n?.resendIn ?? 'Повторная отправка через',
                       style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
                     ),
                     const SizedBox(height: 8),
@@ -235,7 +246,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     icon: const Icon(Icons.refresh, size: 20),
-                    label: const Text('Отправить код повторно', style: TextStyle(fontSize: 16)),
+                    label: Text(l10n?.resendCode ?? 'Отправить код повторно', style: const TextStyle(fontSize: 16)),
                   ),
                 ),
               const Spacer(),
@@ -248,8 +259,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       _verifyCode(code);
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Введите все 6 цифр'),
+                        SnackBar(
+                          content: Text(l10n?.enterAllDigits ?? 'Введите все 6 цифр'),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -261,9 +272,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text(
-                    'Подтвердить',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  child: Text(
+                    l10n?.confirm ?? 'Подтвердить',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -272,7 +283,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 child: TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: Text(
-                    widget.isEmail ? 'Изменить email' : 'Изменить номер',
+                    widget.isEmail 
+                      ? (l10n?.changeEmail ?? 'Изменить email') 
+                      : (l10n?.changePhone ?? 'Изменить номер'),
                     style: const TextStyle(fontSize: 16, color: Colors.blue),
                   ),
                 ),
