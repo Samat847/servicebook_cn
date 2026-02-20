@@ -126,6 +126,8 @@ class AppLocalizations {
       'version': 'Версия',
       'appDescription': 'Приложение для учёта обслуживания автомобилей',
       'appAuthor': '© 2024 ServiceBook',
+      'dashboardTitle': 'Главная',
+      'mapTitle': 'Карта',
     },
     'en': {
       'appTitle': 'ServiceBook',
@@ -241,6 +243,8 @@ class AppLocalizations {
       'version': 'Version',
       'appDescription': 'Car service tracking application',
       'appAuthor': '© 2024 ServiceBook',
+      'dashboardTitle': 'Home',
+      'mapTitle': 'Map',
     },
     'kk': {
       'appTitle': 'ServiceBook',
@@ -356,6 +360,8 @@ class AppLocalizations {
       'version': 'Версия',
       'appDescription': 'Автокөлік қызметін есепке алу қолданбасы',
       'appAuthor': '© 2024 ServiceBook',
+      'dashboardTitle': 'Басты бет',
+      'mapTitle': 'Карта',
     },
   };
   
@@ -473,6 +479,8 @@ class AppLocalizations {
   String get version => _localizedValues[locale.languageCode]?['version'] ?? _localizedValues['ru']!['version']!;
   String get appDescription => _localizedValues[locale.languageCode]?['appDescription'] ?? _localizedValues['ru']!['appDescription']!;
   String get appAuthor => _localizedValues[locale.languageCode]?['appAuthor'] ?? _localizedValues['ru']!['appAuthor']!;
+  String get dashboardTitle => _localizedValues[locale.languageCode]?['dashboardTitle'] ?? _localizedValues['ru']!['dashboardTitle']!;
+  String get mapTitle => _localizedValues[locale.languageCode]?['mapTitle'] ?? _localizedValues['ru']!['mapTitle']!;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
