@@ -91,16 +91,18 @@ class NotificationService {
       '$carName скоро достигнет $warningMileage км. Запланируйте ТО!',
       tz.TZDateTime.now(tz.local).add(const Duration(seconds: 5)),
       const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'mileage_reminders',
-          'Напоминания о пробеге',
-          channelDescription: 'Уведомления о пробеге автомобиля',
-          importance: Importance.medium,
-          priority: Priority.medium,
-        ),
-        iOS: DarwinNotificationDetails(),
-      ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+                android: AndroidNotificationDetails(
+                  'mileage_reminders',
+                  'Напоминания о пробеге',
+                  channelDescription: 'Уведомления о пробеге автомобиля',
+                  importance: Importance.default,
+                  priority: Priority.default,
+                ),
+                iOS: DarwinNotificationDetails(),
+              ),
+              androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+              uiLocalNotificationDateInterpretation:
+                  UILocalNotificationDateInterpretation.absoluteTime,
     );
     debugPrint('[NotificationService] Scheduled mileage reminder for $carName');
   }
