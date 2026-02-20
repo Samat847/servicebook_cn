@@ -82,7 +82,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         
         // Calculate next service mileage
         if (_selectedCar!.mileage != null) {
-          final lastServiceExpense = expenses.where((e) => e.category == ExpenseCategory.maintenance).firstOrNull;
+          Expense? lastServiceExpense;
+          try {
+            lastServiceExpense = expenses.firstWhere((e) => e.category == ExpenseCategory.maintenance);
+          } catch (e) {
+            lastServiceExpense = null;
+          }
           if (lastServiceExpense != null) {
             final nextServiceAt = lastServiceExpense.mileage + 10000;
             _nextServiceMileage = nextServiceAt - _selectedCar!.mileage!;
