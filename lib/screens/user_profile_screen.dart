@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/car_storage.dart';
+import '../l10n/app_localizations.dart';
 import 'auth_screen.dart';
 import 'home_screen.dart';
 import 'add_car_screen.dart';
@@ -90,6 +91,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       body: _isLoading
@@ -105,7 +108,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _loadData,
-                        child: const Text('Повторить'),
+                        child: Text(l10n?.retry ?? 'Повторить'),
                       ),
                     ],
                   ),
@@ -147,9 +150,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                         color: Colors.amber.shade700,
                                         borderRadius: BorderRadius.circular(20),
                                       ),
-                                      child: const Text(
-                                        'Premium',
-                                        style: TextStyle(
+                                      child: Text(
+                                        l10n?.premium ?? 'Premium',
+                                        style: const TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
@@ -168,7 +171,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      'Бонусные баллы',
+                                      l10n?.bonusPoints ?? 'Бонусные баллы',
                                       style: TextStyle(
                                         fontSize: 16,
                                         color: Colors.grey.shade700,
@@ -196,9 +199,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                           color: Colors.blue.shade200,
                                         ),
                                       ),
-                                      child: const Text(
-                                        'Пополнить',
-                                        style: TextStyle(
+                                      child: Text(
+                                        l10n?.refill ?? 'Пополнить',
+                                        style: const TextStyle(
                                           fontSize: 14,
                                           color: Colors.blue,
                                           fontWeight: FontWeight.w500,
@@ -220,9 +223,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                'Мой гараж',
-                                style: TextStyle(
+                              Text(
+                                l10n?.myGarageTitle ?? 'Мой гараж',
+                                style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -231,7 +234,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 key: const Key('add_car_button'),
                                 onPressed: _navigateToAddCar,
                                 icon: const Icon(Icons.add_circle_outline, size: 20),
-                                label: const Text('Добавить'),
+                                label: Text(l10n?.addButton ?? 'Добавить'),
                                 style: TextButton.styleFrom(
                                   foregroundColor: Colors.blue,
                                 ),
@@ -258,9 +261,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                'Документы',
-                                style: TextStyle(
+                              Text(
+                                l10n?.allDocuments ?? 'Документы',
+                                style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -275,7 +278,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                     ),
                                   );
                                 },
-                                child: const Text('Все'),
+                                child: Text(l10n?.all ?? 'Все'),
                               ),
                             ],
                           ),
@@ -290,8 +293,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             _buildDocumentTile(
                               key: const Key('driver_license_tile'),
                               icon: Icons.assignment_ind,
-                              title: 'Водительское удостоверение',
-                              subtitle: 'Действительно до 2028',
+                              title: l10n?.driverLicense ?? 'Водительское удостоверение',
+                              subtitle: l10n?.validUntil2028 ?? 'Действительно до 2028',
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -304,8 +307,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             _buildDocumentTile(
                               key: const Key('insurance_tile'),
                               icon: Icons.car_crash,
-                              title: 'ОСАГО',
-                              subtitle: 'Действует',
+                              title: l10n?.osago ?? 'ОСАГО',
+                              subtitle: l10n?.valid ?? 'Действует',
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -318,8 +321,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             _buildDocumentTile(
                               key: const Key('sts_tile'),
                               icon: Icons.description,
-                              title: 'СТС',
-                              subtitle: 'Бессрочно',
+                              title: l10n?.sts ?? 'СТС',
+                              subtitle: l10n?.unlimited ?? 'Бессрочно',
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -339,10 +342,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           padding: const EdgeInsets.fromLTRB(20, 30, 20, 12),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
+                            children: [
                               Text(
-                                'Настройки',
-                                style: TextStyle(
+                                l10n?.settingsTitle ?? 'Настройки',
+                                style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -360,7 +363,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             _buildSettingsTile(
                               key: const Key('personal_data_tile'),
                               icon: Icons.person_outline,
-                              title: 'Личные данные',
+                              title: l10n?.personalData ?? 'Личные данные',
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -373,7 +376,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             _buildSettingsTile(
                               key: const Key('security_tile'),
                               icon: Icons.lock_outline,
-                              title: 'Безопасность',
+                              title: l10n?.security ?? 'Безопасность',
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -386,7 +389,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             _buildSettingsTile(
                               key: const Key('language_tile'),
                               icon: Icons.language,
-                              title: 'Язык',
+                              title: l10n?.language ?? 'Язык',
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -399,7 +402,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             _buildSettingsTile(
                               key: const Key('data_management_tile'),
                               icon: Icons.storage,
-                              title: 'Управление данными',
+                              title: l10n?.manageData ?? 'Управление данными',
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -412,7 +415,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             _buildSettingsTile(
                               key: const Key('backup_tile'),
                               icon: Icons.cloud_upload,
-                              title: 'Резервные копии',
+                              title: l10n?.backups ?? 'Резервные копии',
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -425,7 +428,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             _buildSettingsTile(
                               key: const Key('help_tile'),
                               icon: Icons.help_outline,
-                              title: 'Помощь и FAQ',
+                              title: l10n?.helpFaq ?? 'Помощь и FAQ',
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -438,7 +441,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             _buildSettingsTile(
                               key: const Key('contact_support_tile'),
                               icon: Icons.support_agent,
-                              title: 'Связаться с поддержкой',
+                              title: l10n?.contactSupport ?? 'Связаться с поддержкой',
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -451,10 +454,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             _buildSettingsTile(
                               key: const Key('rate_app_tile'),
                               icon: Icons.star_outline,
-                              title: 'Оценить приложение',
+                              title: l10n?.rateApp ?? 'Оценить приложение',
                               onTap: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Открываем магазин приложений...')),
+                                  SnackBar(content: Text(l10n?.openAppStore ?? 'Открываем магазин приложений...')),
                                 );
                               },
                             ),
@@ -462,7 +465,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             _buildSettingsTile(
                               key: const Key('privacy_policy_tile'),
                               icon: Icons.privacy_tip,
-                              title: 'Политика конфиденциальности',
+                              title: l10n?.privacyPolicy ?? 'Политика конфиденциальности',
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -475,7 +478,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             _buildSettingsTile(
                               key: const Key('terms_tile'),
                               icon: Icons.description_outlined,
-                              title: 'Условия использования',
+                              title: l10n?.termsOfUse ?? 'Условия использования',
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -488,7 +491,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             _buildSettingsTile(
                               key: const Key('about_tile'),
                               icon: Icons.info_outline,
-                              title: 'О приложении',
+                              title: l10n?.aboutApp ?? 'О приложении',
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -502,7 +505,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             _buildSettingsTile(
                               key: const Key('logout_tile'),
                               icon: Icons.logout,
-                              title: 'Выйти',
+                              title: l10n?.logout ?? 'Выйти',
                               onTap: _logout,
                               color: Colors.red,
                             ),
@@ -556,7 +559,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${car.plate ?? 'Без номера'} • ${car.shortInfo}',
+                        '${car.plate ?? (l10n?.withoutPlate ?? 'Без номера')} • ${car.shortInfo}',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey.shade600,
@@ -586,7 +589,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     Icon(Icons.calendar_today, size: 18, color: Colors.orange.shade600),
                     const SizedBox(width: 6),
                     Text(
-                      'Через 4,500 км',
+                      l10n?.inDays(4500) ?? 'Через 4,500 км',
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.orange.shade700,
@@ -618,9 +621,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               color: Colors.grey,
             ),
             const SizedBox(height: 12),
-            const Text(
-              'В гараже пока нет автомобилей',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+            Text(
+              l10n?.noCarsInGarage ?? 'В гараже пока нет автомобилей',
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -632,7 +635,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Добавить автомобиль'),
+              child: Text(l10n?.addCar ?? 'Добавить автомобиль'),
             ),
           ],
         ),

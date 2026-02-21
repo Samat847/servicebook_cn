@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/car_storage.dart';
+import '../l10n/app_localizations.dart';
 import 'add_car_screen.dart';
 import 'auth_screen.dart';
 import 'car_detail_screen.dart';

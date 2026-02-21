@@ -37,7 +37,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Язык изменён на ${_getLanguageName(languageCode)}'),
+            content: Text('${l10n?.languageChangedTo} ${_getLanguageName(languageCode)}'),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -49,7 +49,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ошибка смены языка: $e'),
+            content: Text('${l10n?.languageChangeError} $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -94,13 +94,13 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
         centerTitle: true,
       ),
       body: _isUpdating
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Применяем язык...'),
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(l10n?.applyingLanguage ?? 'Применяем язык...'),
                 ],
               ),
             )
