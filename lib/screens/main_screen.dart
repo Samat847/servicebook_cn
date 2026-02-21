@@ -15,8 +15,8 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  final GlobalKey<_DashboardRefreshProxy> _dashboardKey =
-      GlobalKey<_DashboardRefreshProxy>();
+  final GlobalKey<_DashboardRefreshProxyState> _dashboardKey =
+      GlobalKey<_DashboardRefreshProxyState>();
 
   late final List<Widget> _screens;
 
