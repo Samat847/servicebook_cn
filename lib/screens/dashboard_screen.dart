@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/car_storage.dart';
 import '../l10n/app_localizations.dart';
@@ -14,12 +16,16 @@ class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  State<DashboardScreen> createState() => DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class DashboardScreenState extends State<DashboardScreen> {
   static const double _avgFuelPricePerLiter = 55.0;
   static const int _plannedServiceMileage = 15000;
+  static const double _partnerDiscountRate = 0.05;
+  static const String _lastTipIndexKey = 'dashboard_last_tip_index';
+  static const String _shownTipIndicesKey = 'dashboard_shown_tip_indices';
+  static const int _recentTipMemory = 5;
 
   bool _isLoading = true;
   String? _errorMessage;
@@ -31,48 +37,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
   double _monthlyExpenses = 0;
   int _nextServiceMileage = 0;
   bool _hasServiceData = false;
+  bool _isServiceOverdue = false;
 
   String _fuelStat = '';
   String _washStat = '';
   String _serviceStat = '';
   String _tiresStat = '';
-  String _dailyAdvice = '';
+  String _currentTip = '';
 
   List<InsightCard> _insightCards = [];
   int _currentInsightIndex = 0;
   Timer? _insightTimer;
-  final PageController _insightPageController = PageController(viewportFraction: 0.88);
+  final PageController _insightPageController =
+      PageController(viewportFraction: 0.88);
 
   bool _locationPermissionRequested = false;
   bool _isFetchingLocation = false;
   String? _nearbyPartnerText;
   bool _locationDenied = false;
 
-  final List<Map<String, dynamic>> _partnerLocations = [
+  static const List<Map<String, dynamic>> _partnerLocations = [
     {
       'id': 'Geely Service Center',
       'name': 'Geely Service',
       'lat': 55.751244,
       'lng': 37.618423,
-      'discount': '10%'
+      'discount': '10%',
     },
     {
       'id': 'Autoparts 24',
       'name': 'Autoparts 24',
       'lat': 55.734876,
       'lng': 37.588346,
-      'discount': '7%'
+      'discount': '7%',
     },
     {
       'id': 'Garage & Parts',
       'name': 'Garage & Parts',
       'lat': 55.760123,
       'lng': 37.641234,
-      'discount': '5%'
+      'discount': '5%',
     },
   ];
 
-  final List<String> _dailyTips = const [
+  static const List<String> _allTips = [
     'Не забывайте менять масло каждые 10 000 км.',
     'Проверяйте уровень антифриза перед зимой.',
     'Оригинальные запчасти Chery дешевле у партнёров.',
@@ -84,6 +92,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'Следите за уровнем масла перед дальними поездками.',
     'Прогревайте двигатель 1–2 минуты в холодный сезон.',
     'Сравнивайте цены на сервисы у партнёров приложения.',
+    'Регулярно проверяйте уровень охлаждающей жидкости.',
+    'Заменяйте воздушный фильтр каждые 15 000 км.',
+    'Не игнорируйте индикатор Check Engine — своевременно обратитесь в сервис.',
+    'Проверяйте давление в шинах раз в месяц.',
+    'Используйте оригинальные масла, рекомендованные производителем.',
+    'Обновляйте прошивку бортового компьютера у официального дилера.',
+    'Проверяйте уровень тормозной жидкости каждые 30 000 км.',
+    'Регулярно проверяйте состояние ремня ГРМ — его обрыв дорого обходится.',
+    'Мойте двигатель раз в год, это продлит его ресурс.',
+    'Проверяйте аккумулятор перед зимним сезоном.',
+    'Смазывайте петли и замки дверей раз в год.',
+    'Следите за состоянием щёток стеклоочистителя — менять раз в год.',
+    'Чистите форсунки каждые 30 000 км для экономии топлива.',
+    'Проверяйте зазоры клапанов согласно регламенту производителя.',
   ];
 
   @override
@@ -117,7 +139,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (cars.isNotEmpty) {
         _selectedCar = cars.first;
 
-        final expenses = await CarStorage.loadExpensesList(carId: _selectedCar!.id);
+        final expenses =
+            await CarStorage.loadExpensesList(carId: _selectedCar!.id);
         _recentExpenses = expenses.take(3).toList();
 
         final monthlyStats = await CarStorage.getExpenseStats(
@@ -128,6 +151,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _monthlyExpenses = monthlyStats['total'] as double;
 
         _hasServiceData = false;
+        _isServiceOverdue = false;
         _nextServiceMileage = 0;
 
         if (_selectedCar!.mileage != null) {
@@ -140,9 +164,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
             lastServiceExpense = null;
           }
           if (lastServiceExpense != null) {
-            final nextServiceAt = lastServiceExpense.mileage + _plannedServiceMileage;
-            _nextServiceMileage = nextServiceAt - _selectedCar!.mileage!;
-            if (_nextServiceMileage < 0) _nextServiceMileage = 0;
+            final nextServiceAt =
+                lastServiceExpense.mileage + _plannedServiceMileage;
+            final remaining = nextServiceAt - _selectedCar!.mileage!;
+            if (remaining <= 0) {
+              _isServiceOverdue = true;
+              _nextServiceMileage = remaining.abs();
+            } else {
+              _nextServiceMileage = remaining;
+            }
             _hasServiceData = true;
           }
         }
@@ -153,7 +183,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _tiresStat = _buildTiresStat(expenses);
 
         _insightCards = await _generateInsightCards(expenses);
-        _dailyAdvice = _dailyTips[_getDailyTipIndex(now)];
+        _currentTip = await _pickNextTip();
       }
 
       setState(() {
@@ -169,25 +199,60 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  Future<List<InsightCard>> _generateInsightCards(List<Expense> expenses) async {
+  Future<String> _pickNextTip() async {
+    final prefs = await SharedPreferences.getInstance();
+    final shownRaw = prefs.getStringList(_shownTipIndicesKey) ?? [];
+    final shownIndices = shownRaw.map(int.parse).toList();
+
+    final available = List.generate(_allTips.length, (i) => i)
+        .where((i) => !shownIndices.contains(i))
+        .toList();
+
+    final pool = available.isNotEmpty ? available : List.generate(_allTips.length, (i) => i);
+    final picked = pool[Random().nextInt(pool.length)];
+
+    final updatedShown = [...shownIndices, picked];
+    final trimmed = updatedShown.length > _recentTipMemory
+        ? updatedShown.sublist(updatedShown.length - _recentTipMemory)
+        : updatedShown;
+    await prefs.setStringList(
+        _shownTipIndicesKey, trimmed.map((i) => i.toString()).toList());
+    await prefs.setInt(_lastTipIndexKey, picked);
+
+    return _allTips[picked];
+  }
+
+  Future<List<InsightCard>> _generateInsightCards(
+      List<Expense> expenses) async {
     final cards = <InsightCard>[];
     final now = DateTime.now();
 
+    final serviceColor =
+        _isServiceOverdue ? Colors.red : Colors.orange;
     final serviceValue = _hasServiceData
-        ? '${_formatNumber(_nextServiceMileage)} км'
+        ? (_isServiceOverdue
+            ? 'Просрочено на ${_formatNumber(_nextServiceMileage)} км'
+            : '${_formatNumber(_nextServiceMileage)} км')
         : '➕ Добавить ТО';
+    double? serviceProgress;
+    if (_hasServiceData && !_isServiceOverdue) {
+      serviceProgress =
+          (_nextServiceMileage / _plannedServiceMileage).clamp(0.0, 1.0);
+    } else if (_isServiceOverdue) {
+      serviceProgress = 0.0;
+    }
     cards.add(InsightCard(
       icon: '🔧',
       title: 'До следующего ТО',
       value: serviceValue,
-      accentColor: Colors.orange,
-      progress: _hasServiceData
-          ? (_nextServiceMileage / _plannedServiceMileage).clamp(0, 1).toDouble()
-          : null,
+      accentColor: serviceColor,
+      progress: serviceProgress,
       isPlaceholder: !_hasServiceData,
+      isUrgent: _isServiceOverdue,
     ));
 
-    final fuelExpenses = expenses.where((e) => e.category == ExpenseCategory.fuel).toList();
+    final fuelExpenses =
+        expenses.where((e) => e.category == ExpenseCategory.fuel).toList();
     final currentConsumption = _calculateConsumption(
       fuelExpenses,
       from: now.subtract(const Duration(days: 30)),
@@ -212,12 +277,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
     }
 
+    final fuelPlaceholder = fuelExpenses.length < 2;
     cards.add(InsightCard(
       icon: '⛽',
       title: 'Средний расход',
       value: currentConsumption != null
           ? '${currentConsumption.toStringAsFixed(1)} л/100 км'
-          : '➕ Добавить первую заправку',
+          : (fuelPlaceholder
+              ? 'Добавьте больше заправок'
+              : '➕ Добавить первую заправку'),
       accentColor: Colors.blue,
       trend: trend,
       trendColor: trendColor,
@@ -226,46 +294,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final documents = await CarStorage.loadDocumentsList();
     Document? expiringDocument;
-    final osagoDocuments = documents
-        .where((d) => d.type == DocumentType.osago && d.expiryDate != null)
-        .toList()
-      ..sort((a, b) => (a.expiryDate ?? now).compareTo(b.expiryDate ?? now));
 
-    if (osagoDocuments.isNotEmpty) {
-      expiringDocument = osagoDocuments.first;
-    } else {
-      final expiringDocs = documents
-          .where((d) => d.expiryDate != null)
-          .toList()
-        ..sort((a, b) => (a.expiryDate ?? now).compareTo(b.expiryDate ?? now));
-      if (expiringDocs.isNotEmpty) {
-        expiringDocument = expiringDocs.first;
-      }
+    final docsWithExpiry = documents
+        .where((d) => d.expiryDate != null)
+        .toList()
+      ..sort(
+          (a, b) => (a.expiryDate ?? now).compareTo(b.expiryDate ?? now));
+
+    if (docsWithExpiry.isNotEmpty) {
+      expiringDocument = docsWithExpiry.first;
     }
 
     if (expiringDocument != null && expiringDocument.expiryDate != null) {
       final daysLeft = expiringDocument.expiryDate!.difference(now).inDays;
+      final isExpired = daysLeft < 0;
+      final docTitle = isExpired
+          ? '${expiringDocument.type.displayName} истёк'
+          : '${expiringDocument.type.displayName} истекает';
+      final docValue = isExpired
+          ? 'Просрочено на ${daysLeft.abs()} дн.'
+          : '$daysLeft дней';
       cards.add(InsightCard(
         icon: '📄',
-        title: expiringDocument.type == DocumentType.osago
-            ? 'ОСАГО истекает'
-            : expiringDocument.type.displayName,
-        value: '$daysLeft дней',
-        accentColor: daysLeft < 14 ? Colors.red : Colors.orange,
+        title: docTitle,
+        value: docValue,
+        accentColor: (daysLeft < 14) ? Colors.red : Colors.orange,
         isUrgent: daysLeft < 14,
       ));
     } else {
       cards.add(const InsightCard(
         icon: '📄',
-        title: 'ОСАГО истекает',
-        value: '➕ Добавить документ',
+        title: 'Истекает документ',
+        value: 'Документы не добавлены',
         accentColor: Colors.grey,
         isPlaceholder: true,
       ));
     }
 
-    if (_monthlyExpenses > 0) {
-      final savedAmount = (_monthlyExpenses * 0.05).round();
+    final partnerExpenses =
+        expenses.where((e) => e.isPartner).toList();
+    if (partnerExpenses.isNotEmpty) {
+      final totalPartnerAmount =
+          partnerExpenses.fold<double>(0, (sum, e) => sum + e.amount);
+      final savedAmount =
+          (totalPartnerAmount * _partnerDiscountRate).round();
       cards.add(InsightCard(
         icon: '💰',
         title: 'Сэкономлено',
@@ -277,8 +349,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       cards.add(const InsightCard(
         icon: '💰',
         title: 'Сэкономлено',
-        value: '➕ Добавить расходы',
-        subtitle: 'на партнёрских АЗС/СТО',
+        value: '0 ₽',
+        subtitle: 'Совершайте покупки у партнёров',
         accentColor: Colors.grey,
         isPlaceholder: true,
       ));
@@ -295,7 +367,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           timer.cancel();
           return;
         }
-        _currentInsightIndex = (_currentInsightIndex + 1) % _insightCards.length;
+        _currentInsightIndex =
+            (_currentInsightIndex + 1) % _insightCards.length;
         _insightPageController.animateToPage(
           _currentInsightIndex,
           duration: const Duration(milliseconds: 400),
@@ -306,9 +379,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _loadNearbyPartner() async {
-    if (_locationPermissionRequested) {
-      return;
-    }
+    if (_locationPermissionRequested) return;
 
     setState(() {
       _locationPermissionRequested = true;
@@ -391,36 +462,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await _loadData();
   }
 
+  Future<void> refreshFromParent() async {
+    await _loadData();
+  }
+
   String _buildFuelStat(List<Expense> expenses) {
-    final fuelExpenses = expenses.where((e) => e.category == ExpenseCategory.fuel).toList();
-    if (fuelExpenses.isEmpty) {
-      return '➕ Добавить';
-    }
+    final fuelExpenses =
+        expenses.where((e) => e.category == ExpenseCategory.fuel).toList();
+    if (fuelExpenses.isEmpty) return '➕ Добавить';
     final latest = fuelExpenses.first;
     final liters = latest.amount / _avgFuelPricePerLiter;
     return 'Последняя: ${liters.toStringAsFixed(0)} л';
   }
 
   String _buildWashStat(List<Expense> expenses) {
-    final washExpenses = expenses.where((e) => e.category == ExpenseCategory.wash).toList();
-    if (washExpenses.isEmpty) {
-      return '➕ Добавить';
-    }
+    final washExpenses =
+        expenses.where((e) => e.category == ExpenseCategory.wash).toList();
+    if (washExpenses.isEmpty) return '➕ Добавить';
     final latest = washExpenses.first;
     final days = DateTime.now().difference(latest.date).inDays;
     return _formatDaysAgo(days);
   }
 
   String _buildServiceStat() {
-    if (!_hasServiceData) {
-      return '➕ Добавить';
-    }
+    if (!_hasServiceData) return '➕ Добавить';
+    if (_isServiceOverdue) return 'Просрочено!';
     return 'Осталось ${_formatNumber(_nextServiceMileage)} км';
   }
 
   String _buildTiresStat(List<Expense> expenses) {
-    final tireExpenses = expenses.where((e) => e.category == ExpenseCategory.tires).toList();
-    final referenceDate = tireExpenses.isNotEmpty ? tireExpenses.first.date : DateTime.now();
+    final tireExpenses =
+        expenses.where((e) => e.category == ExpenseCategory.tires).toList();
+    final referenceDate =
+        tireExpenses.isNotEmpty ? tireExpenses.first.date : DateTime.now();
     return 'Сезон: ${_getSeason(referenceDate)}';
   }
 
@@ -432,55 +506,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final filtered = fuelExpenses
         .where((e) => e.date.isAfter(from) && e.date.isBefore(to))
         .toList();
-    if (filtered.length < 2) {
-      return null;
-    }
+    if (filtered.length < 2) return null;
     filtered.sort((a, b) => a.date.compareTo(b.date));
     final first = filtered.first;
     final last = filtered.last;
     final mileageDiff = last.mileage - first.mileage;
-    if (mileageDiff <= 0) {
-      return null;
-    }
+    if (mileageDiff <= 0) return null;
     final totalAmount = filtered.fold<double>(0, (sum, e) => sum + e.amount);
     final liters = totalAmount / _avgFuelPricePerLiter;
-    if (liters <= 0) {
-      return null;
-    }
+    if (liters <= 0) return null;
     return (liters / mileageDiff) * 100;
-  }
-
-  int _getDailyTipIndex(DateTime date) {
-    final dayOfYear = DateTime(date.year, date.month, date.day)
-        .difference(DateTime(date.year, 1, 1))
-        .inDays;
-    return dayOfYear % _dailyTips.length;
   }
 
   String _getSeason(DateTime date) {
     final month = date.month;
-    if (month == 12 || month <= 2) {
-      return 'зима';
-    }
-    if (month >= 3 && month <= 5) {
-      return 'весна';
-    }
-    if (month >= 6 && month <= 8) {
-      return 'лето';
-    }
+    if (month == 12 || month <= 2) return 'зима';
+    if (month >= 3 && month <= 5) return 'весна';
+    if (month >= 6 && month <= 8) return 'лето';
     return 'осень';
   }
 
   String _formatDaysAgo(int days) {
-    if (days <= 0) {
-      return 'Сегодня';
-    }
-    if (days == 1) {
-      return '1 день назад';
-    }
-    if (days >= 2 && days <= 4) {
-      return '$days дня назад';
-    }
+    if (days <= 0) return 'Сегодня';
+    if (days == 1) return '1 день назад';
+    if (days >= 2 && days <= 4) return '$days дня назад';
     return '$days дней назад';
   }
 
@@ -490,9 +539,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (_isLoading) {
       return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -525,7 +572,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.directions_car_outlined, size: 64, color: Colors.grey[300]),
+              Icon(Icons.directions_car_outlined,
+                  size: 64, color: Colors.grey[300]),
               const SizedBox(height: 16),
               Text(
                 l10n?.noCars ?? 'Нет автомобилей',
@@ -533,7 +581,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                l10n?.noCarsDescription ?? 'Добавьте автомобиль в разделе "Гараж"',
+                l10n?.noCarsDescription ??
+                    'Добавьте автомобиль в разделе "Гараж"',
                 style: TextStyle(color: Colors.grey[500]),
               ),
             ],
@@ -610,28 +659,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              Icon(
-                                Icons.speed,
-                                size: 16,
-                                color: Colors.grey.shade600,
-                              ),
+                              Icon(Icons.speed,
+                                  size: 16, color: Colors.grey.shade600),
                               const SizedBox(width: 8),
                               Text(
                                 '${_selectedCar!.mileage?.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]} ') ?? '0'} км',
                                 style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey.shade700,
-                                ),
+                                    fontSize: 16,
+                                    color: Colors.grey.shade700),
                               ),
                               const SizedBox(width: 20),
-                              Icon(
-                                Icons.confirmation_number,
-                                size: 16,
-                                color: Colors.grey.shade600,
-                              ),
+                              Icon(Icons.confirmation_number,
+                                  size: 16, color: Colors.grey.shade600),
                               const SizedBox(width: 8),
                               Text(
-                                _selectedCar!.plate ?? (l10n?.withoutPlate ?? 'Без номера'),
+                                _selectedCar!.plate ??
+                                    (l10n?.withoutPlate ?? 'Без номера'),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
@@ -663,9 +706,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 Text(
                                   l10n?.monthlyExpenses ?? 'Расходы в месяце',
                                   style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey.shade600,
-                                  ),
+                                      fontSize: 14,
+                                      color: Colors.grey.shade600),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
@@ -695,78 +737,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 Text(
                                   l10n?.nextService ?? 'Следующее ТО',
                                   style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey.shade600,
-                                  ),
+                                      fontSize: 14,
+                                      color: Colors.grey.shade600),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
                                   _hasServiceData
-                                      ? (l10n?.inKM(_nextServiceMileage) ?? 'через $_nextServiceMileage км')
+                                      ? (_isServiceOverdue
+                                          ? 'Просрочено'
+                                          : (l10n?.inKM(_nextServiceMileage) ??
+                                              'через $_nextServiceMileage км'))
                                       : 'Нет данных',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
+                                    color: _isServiceOverdue
+                                        ? Colors.red
+                                        : null,
                                   ),
                                 ),
                               ],
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildQuickAction(
-                        key: const Key('add_service_button'),
-                        icon: Icons.add_circle_outline,
-                        label: l10n?.addRecord ?? 'Добавить запись',
-                        color: Colors.blue,
-                        onTap: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AddServiceScreen(car: _selectedCar!),
-                            ),
-                          );
-                          if (result == true) {
-                            await _refreshData();
-                          }
-                        },
-                      ),
-                      _buildQuickAction(
-                        key: const Key('sell_report_button'),
-                        icon: Icons.description_outlined,
-                        label: l10n?.sellReport ?? 'Отчет для продажи',
-                        color: Colors.green,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SellReportScreen(car: _selectedCar!),
-                            ),
-                          );
-                        },
-                      ),
-                      _buildQuickAction(
-                        key: const Key('analytics_button'),
-                        icon: Icons.insights_outlined,
-                        label: l10n?.analytics ?? 'Аналитика',
-                        color: Colors.purple,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ExpenseAnalyticsScreen(car: _selectedCar!),
-                            ),
-                          );
-                        },
                       ),
                     ],
                   ),
@@ -792,7 +785,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               icon: Icons.local_gas_station,
                               label: l10n?.refuel ?? 'Заправить',
                               stat: _fuelStat,
-                              colors: const [Color(0xFF1E88E5), Color(0xFF64B5F6)],
+                              colors: const [
+                                Color(0xFF1E88E5),
+                                Color(0xFF64B5F6),
+                              ],
                               onTap: () async {
                                 final result = await Navigator.push(
                                   context,
@@ -800,13 +796,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     builder: (context) => AddServiceScreen(
                                       car: _selectedCar!,
                                       initialCategory: ExpenseCategory.fuel,
-                                      initialWorkType: l10n?.fuelWorkType ?? 'Топливо',
+                                      initialWorkType:
+                                          l10n?.fuelWorkType ?? 'Топливо',
                                     ),
                                   ),
                                 );
-                                if (result == true) {
-                                  await _refreshData();
-                                }
+                                if (result == true) await _refreshData();
                               },
                             ),
                           ),
@@ -816,7 +811,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               icon: Icons.local_car_wash,
                               label: l10n?.carWash ?? 'Мойка',
                               stat: _washStat,
-                              colors: const [Color(0xFF43A047), Color(0xFF9CCC65)],
+                              colors: const [
+                                Color(0xFF43A047),
+                                Color(0xFF9CCC65),
+                              ],
                               onTap: () async {
                                 final result = await Navigator.push(
                                   context,
@@ -824,13 +822,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     builder: (context) => AddServiceScreen(
                                       car: _selectedCar!,
                                       initialCategory: ExpenseCategory.wash,
-                                      initialWorkType: l10n?.washWorkType ?? 'Мойка',
+                                      initialWorkType:
+                                          l10n?.washWorkType ?? 'Мойка',
                                     ),
                                   ),
                                 );
-                                if (result == true) {
-                                  await _refreshData();
-                                }
+                                if (result == true) await _refreshData();
                               },
                             ),
                           ),
@@ -840,21 +837,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               icon: Icons.build,
                               label: l10n?.service ?? 'ТО',
                               stat: _serviceStat,
-                              colors: const [Color(0xFFFF8F00), Color(0xFFFFD54F)],
+                              colors: const [
+                                Color(0xFFFF8F00),
+                                Color(0xFFFFD54F),
+                              ],
                               onTap: () async {
                                 final result = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => AddServiceScreen(
                                       car: _selectedCar!,
-                                      initialCategory: ExpenseCategory.maintenance,
+                                      initialCategory:
+                                          ExpenseCategory.maintenance,
                                       initialWorkType: 'ТО',
                                     ),
                                   ),
                                 );
-                                if (result == true) {
-                                  await _refreshData();
-                                }
+                                if (result == true) await _refreshData();
                               },
                             ),
                           ),
@@ -864,7 +863,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               icon: Icons.tire_repair,
                               label: l10n?.tires ?? 'Шины',
                               stat: _tiresStat,
-                              colors: const [Color(0xFF7E57C2), Color(0xFFF06292)],
+                              colors: const [
+                                Color(0xFF7E57C2),
+                                Color(0xFFF06292),
+                              ],
                               onTap: () async {
                                 final result = await Navigator.push(
                                   context,
@@ -872,13 +874,106 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     builder: (context) => AddServiceScreen(
                                       car: _selectedCar!,
                                       initialCategory: ExpenseCategory.tires,
-                                      initialWorkType: l10n?.tiresWorkType ?? 'Резина',
+                                      initialWorkType:
+                                          l10n?.tiresWorkType ?? 'Резина',
                                     ),
                                   ),
                                 );
-                                if (result == true) {
-                                  await _refreshData();
-                                }
+                                if (result == true) await _refreshData();
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildGradientAction(
+                              key: const Key('add_service_button'),
+                              icon: Icons.add_circle_outline,
+                              label: l10n?.addRecord ?? 'Добавить запись',
+                              stat: '',
+                              colors: const [
+                                Color(0xFF1565C0),
+                                Color(0xFF42A5F5),
+                              ],
+                              onTap: () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AddServiceScreen(
+                                        car: _selectedCar!),
+                                  ),
+                                );
+                                if (result == true) await _refreshData();
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildGradientAction(
+                              key: const Key('sell_report_button'),
+                              icon: Icons.description_outlined,
+                              label:
+                                  l10n?.sellReport ?? 'Отчет для продажи',
+                              stat: '',
+                              colors: const [
+                                Color(0xFF2E7D32),
+                                Color(0xFF66BB6A),
+                              ],
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        SellReportScreen(car: _selectedCar!),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildGradientAction(
+                              key: const Key('analytics_button'),
+                              icon: Icons.insights_outlined,
+                              label: l10n?.analytics ?? 'Аналитика',
+                              stat: '',
+                              colors: const [
+                                Color(0xFF6A1B9A),
+                                Color(0xFFBA68C8),
+                              ],
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ExpenseAnalyticsScreen(
+                                            car: _selectedCar!),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildGradientAction(
+                              icon: Icons.handshake_outlined,
+                              label: 'Партнёры СТО',
+                              stat: '',
+                              colors: const [
+                                Color(0xFFE65100),
+                                Color(0xFFFF8A65),
+                              ],
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        PartnersScreen(car: _selectedCar),
+                                  ),
+                                );
                               },
                             ),
                           ),
@@ -887,7 +982,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: 20),
                       Row(
                         children: [
-                          const Icon(Icons.lightbulb_outline, size: 20, color: Colors.amber),
+                          const Icon(Icons.lightbulb_outline,
+                              size: 20, color: Colors.amber),
                           const SizedBox(width: 8),
                           const Text(
                             'Умные подсказки',
@@ -938,16 +1034,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const AllRecordsScreen(),
+                                builder: (context) =>
+                                    const AllRecordsScreen(),
                               ),
                             );
                           },
                           child: Text(
                             l10n?.all ?? 'Все',
                             style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.blue,
-                            ),
+                                fontSize: 14, color: Colors.blue),
                           ),
                         ),
                       ],
@@ -971,15 +1066,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   width: 40,
                                   height: 40,
                                   decoration: BoxDecoration(
-                                    color: Color(expense.category.colorValue).withOpacity(0.1),
+                                    color: Color(expense.category.colorValue)
+                                        .withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  child: _getCategoryIcon(expense.category),
+                                  child:
+                                      _getCategoryIcon(expense.category),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         expense.title,
@@ -999,12 +1097,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ],
                                   ),
                                 ),
-                                Text(
-                                  expense.formattedAmount,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      expense.formattedAmount,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    if (expense.isPartner)
+                                      Container(
+                                        margin:
+                                            const EdgeInsets.only(top: 4),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green.shade50,
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          'Партнёр',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.green.shade700,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -1038,6 +1161,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildGradientAction({
+    Key? key,
     required IconData icon,
     required String label,
     required String stat,
@@ -1045,6 +1169,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required VoidCallback onTap,
   }) {
     return Column(
+      key: key,
       mainAxisSize: MainAxisSize.min,
       children: [
         _PulsatingIconButton(
@@ -1061,17 +1186,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
             fontWeight: FontWeight.w600,
           ),
           textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          stat,
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.grey.shade600,
-          ),
-          textAlign: TextAlign.center,
           maxLines: 2,
         ),
+        if (stat.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            stat,
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+          ),
+        ],
       ],
     );
   }
@@ -1099,11 +1224,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
-                  color: card.accentColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(12),
+                  gradient: LinearGradient(
+                    colors: [
+                      card.accentColor,
+                      card.accentColor.withOpacity(0.6),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: card.accentColor.withOpacity(0.3),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: Center(
                   child: Text(
@@ -1147,10 +1286,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 4),
             Text(
               card.subtitle!,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-              ),
+              style:
+                  TextStyle(fontSize: 12, color: Colors.grey.shade600),
             ),
           ],
           if (card.progress != null) ...[
@@ -1161,7 +1298,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 value: card.progress,
                 minHeight: 6,
                 backgroundColor: card.accentColor.withOpacity(0.15),
-                valueColor: AlwaysStoppedAnimation<Color>(card.accentColor),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(card.accentColor),
               ),
             ),
           ],
@@ -1194,7 +1332,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => PartnersScreen(car: _selectedCar),
+                  builder: (context) =>
+                      PartnersScreen(car: _selectedCar),
                 ),
               );
             }
@@ -1231,10 +1370,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Expanded(
               child: Text(
                 text,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade700,
-                ),
+                style:
+                    TextStyle(fontSize: 13, color: Colors.grey.shade700),
               ),
             ),
             if (_nearbyPartnerText != null)
@@ -1243,7 +1380,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PartnersScreen(car: _selectedCar),
+                      builder: (context) =>
+                          PartnersScreen(car: _selectedCar),
                     ),
                   );
                 },
@@ -1257,7 +1395,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildDailyTipWidget() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(16),
@@ -1269,7 +1407,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              _dailyAdvice,
+              _currentTip,
               style: TextStyle(
                 fontSize: 13,
                 color: Colors.grey.shade700,
@@ -1277,50 +1415,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildQuickAction({
-    Key? key,
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Expanded(
-      child: GestureDetector(
-        key: key,
-        onTap: onTap,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 28,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade700,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -1346,7 +1440,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   String _formatDate(DateTime date) {
-    final months = ['Янв', 'Фев', 'Мар', 'Апр', 'Мая', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+    final months = [
+      'Янв', 'Фев', 'Мар', 'Апр', 'Мая', 'Июн',
+      'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек',
+    ];
     return '${date.day} ${months[date.month - 1]}';
   }
 
@@ -1410,14 +1507,10 @@ class _PulsatingIconButtonState extends State<_PulsatingIconButton> {
   double _scale = 1.0;
 
   Future<void> _handleTap() async {
-    setState(() {
-      _scale = 0.92;
-    });
+    setState(() => _scale = 0.92);
     await Future.delayed(const Duration(milliseconds: 120));
     if (!mounted) return;
-    setState(() {
-      _scale = 1.0;
-    });
+    setState(() => _scale = 1.0);
     widget.onTap();
   }
 
