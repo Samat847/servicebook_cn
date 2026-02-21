@@ -18,7 +18,9 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   bool _isLoading = true;
   String? _errorMessage;
-  
+
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
+
   Car? _selectedCar;
   List<Expense> _recentExpenses = [];
   double _monthlyExpenses = 0;
@@ -455,7 +457,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                             );
                           },
-                          Text(
+                          child: Text(
                             l10n?.all ?? 'Все',
                             style: const TextStyle(
                               fontSize: 14,
