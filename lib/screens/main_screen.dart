@@ -17,6 +17,8 @@ class _MainScreenState extends State<MainScreen> {
 
   final GlobalKey<_DashboardRefreshProxyState> _dashboardKey =
       GlobalKey<_DashboardRefreshProxyState>();
+  final GlobalKey<_UserProfileRefreshProxyState> _profileKey =
+      GlobalKey<_UserProfileRefreshProxyState>();
 
   late final List<Widget> _screens;
 
@@ -27,13 +29,16 @@ class _MainScreenState extends State<MainScreen> {
       _DashboardRefreshProxy(key: _dashboardKey),
       const HomeScreen(),
       const PartnersScreen(),
-      const UserProfileScreen(),
+      _UserProfileRefreshProxy(key: _profileKey),
     ];
   }
 
   void _onItemTapped(int index) {
     if (index == 0 && _selectedIndex != 0) {
       _dashboardKey.currentState?.refresh();
+    }
+    if (index == 3 && _selectedIndex != 3) {
+      _profileKey.currentState?.refresh();
     }
     setState(() {
       _selectedIndex = index;
@@ -125,5 +130,27 @@ class _DashboardRefreshProxyState extends State<_DashboardRefreshProxy> {
   @override
   Widget build(BuildContext context) {
     return DashboardScreen(key: _dashboardScreenKey);
+  }
+}
+
+class _UserProfileRefreshProxy extends StatefulWidget {
+  const _UserProfileRefreshProxy({super.key});
+
+  @override
+  State<_UserProfileRefreshProxy> createState() =>
+      _UserProfileRefreshProxyState();
+}
+
+class _UserProfileRefreshProxyState extends State<_UserProfileRefreshProxy> {
+  final GlobalKey<UserProfileScreenState> _profileScreenKey =
+      GlobalKey<UserProfileScreenState>();
+
+  void refresh() {
+    _profileScreenKey.currentState?.refreshFromParent();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return UserProfileScreen(key: _profileScreenKey);
   }
 }
