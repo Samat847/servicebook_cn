@@ -655,13 +655,11 @@ class AppLocalizations {
   String get bookOnline => _localizedValues[locale.languageCode]?['bookOnline'] ?? _localizedValues['ru']!['bookOnline']!;
   String withDiscount(String discount) => _localizedValues[locale.languageCode]?['withDiscount']?.replaceAll('{discount}', discount) ?? _localizedValues['ru']!['withDiscount']!.replaceAll('{discount}', discount);
   String get allDocuments => _localizedValues[locale.languageCode]?['allDocuments'] ?? _localizedValues['ru']!['allDocuments']!;
-  String get personalData => _localizedValues[locale.languageCode]?['personalData'] ?? _localizedValues['ru']!['personalData']!;
   String get manageData => _localizedValues[locale.languageCode]?['manageData'] ?? _localizedValues['ru']!['manageData']!;
   String get backups => _localizedValues[locale.languageCode]?['backups'] ?? _localizedValues['ru']!['backups']!;
   String get helpFaq => _localizedValues[locale.languageCode]?['helpFaq'] ?? _localizedValues['ru']!['helpFaq']!;
   String get contactSupport => _localizedValues[locale.languageCode]?['contactSupport'] ?? _localizedValues['ru']!['contactSupport']!;
   String get rateApp => _localizedValues[locale.languageCode]?['rateApp'] ?? _localizedValues['ru']!['rateApp']!;
-  String get privacyPolicy => _localizedValues[locale.languageCode]?['privacyPolicy'] ?? _localizedValues['ru']!['privacyPolicy']!;
   String get termsOfUse => _localizedValues[locale.languageCode]?['termsOfUse'] ?? _localizedValues['ru']!['termsOfUse']!;
   String get aboutApp => _localizedValues[locale.languageCode]?['aboutApp'] ?? _localizedValues['ru']!['aboutApp']!;
   String get bonusPoints => _localizedValues[locale.languageCode]?['bonusPoints'] ?? _localizedValues['ru']!['bonusPoints']!;

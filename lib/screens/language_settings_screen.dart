@@ -13,6 +13,8 @@ class LanguageSettingsScreen extends StatefulWidget {
 class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
   bool _isUpdating = false;
 
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
+
   static const List<Map<String, String>> _languages = [
     {'code': 'ru', 'name': 'Русский', 'flag': '🇷🇺'},
     {'code': 'en', 'name': 'English', 'flag': '🇬🇧'},
