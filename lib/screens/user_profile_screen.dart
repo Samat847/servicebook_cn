@@ -25,10 +25,10 @@ class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
 
   @override
-  State<UserProfileScreen> createState() => _UserProfileScreenState();
+  UserProfileScreenState createState() => UserProfileScreenState();
 }
 
-class _UserProfileScreenState extends State<UserProfileScreen> {
+class UserProfileScreenState extends State<UserProfileScreen> {
   UserProfile _profile = UserProfile(name: '', city: '');
   List<Car> _cars = [];
   bool _isLoading = true;
@@ -39,6 +39,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   @override
   void initState() {
     super.initState();
+    _loadData();
+  }
+
+  void refreshFromParent() {
     _loadData();
   }
 
@@ -76,14 +80,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Future<void> _navigateToAddCar() async {
-    final newCar = await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const AddCarScreen()),
     );
-    if (newCar != null && newCar is Car) {
-      setState(() => _cars.add(newCar));
-      await CarStorage.saveCar(newCar);
-    }
+    await _loadData();
   }
 
   String _formatMileage(int? mileage) {
@@ -246,15 +247,26 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         ),
                       ),
 
-                      // Карточка автомобиля (первый в списке или пустое состояние)
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: _cars.isEmpty
-                              ? _buildEmptyCarCard()
-                              : _buildCarCard(_cars.first),
-                        ),
-                      ),
+                      // Карточки автомобилей или пустое состояние
+                      _cars.isEmpty
+                          ? SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                child: _buildEmptyCarCard(),
+                              ),
+                            )
+                          : SliverPadding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              sliver: SliverList(
+                                delegate: SliverChildBuilderDelegate(
+                                  (context, index) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: _buildCarCard(_cars[index]),
+                                  ),
+                                  childCount: _cars.length,
+                                ),
+                              ),
+                            ),
 
                       // Раздел "Документы"
                       SliverToBoxAdapter(
