@@ -11,6 +11,7 @@ import 'sell_report_screen.dart';
 import 'expense_analytics_screen.dart';
 import 'AllRecordsScreen.dart';
 import 'partners_screen.dart';
+import 'all_documents_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -233,7 +234,7 @@ class DashboardScreenState extends State<DashboardScreen> {
         ? (_isServiceOverdue
             ? 'Просрочено на ${_formatNumber(_nextServiceMileage)} км'
             : '${_formatNumber(_nextServiceMileage)} км')
-        : '➕ Добавить ТО';
+        : '';
     double? serviceProgress;
     if (_hasServiceData && !_isServiceOverdue) {
       serviceProgress =
@@ -851,8 +852,8 @@ class DashboardScreenState extends State<DashboardScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: _buildGradientAction(
-                              icon: Icons.people,
-                              label: 'Партнёры СТО',
+                              icon: Icons.description,
+                              label: 'Документы',
                               stat: '',
                               colors: const [
                                 Color(0xFFE65100),
@@ -863,7 +864,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        PartnersScreen(car: _selectedCar),
+                                        const AllDocumentsScreen(),
                                   ),
                                 );
                               },
