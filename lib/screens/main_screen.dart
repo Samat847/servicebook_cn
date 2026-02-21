@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/locale_provider.dart';
 import '../l10n/app_localizations.dart';
 import 'dashboard_screen.dart';
 import 'home_screen.dart';
-import 'partners_screen.dart'; // ← заменили map_screen.dart
+import 'partners_screen.dart';
 import 'user_profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -17,24 +15,26 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
-    const DashboardScreen(),
-    const HomeScreen(),
-    const PartnersScreen(), // ← теперь экран партнёров
-    const UserProfileScreen(),
-  ];
+  final GlobalKey<_DashboardRefreshProxy> _dashboardKey =
+      GlobalKey<_DashboardRefreshProxy>();
 
-  List<String> _getTitles(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return [
-      l10n?.dashboardTitle ?? 'Главная',
-      l10n?.garage ?? 'Мой гараж',
-      l10n?.mapTitle ?? 'Карта',
-      l10n?.profile ?? 'Профиль',
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      _DashboardRefreshProxy(key: _dashboardKey),
+      const HomeScreen(),
+      const PartnersScreen(),
+      const UserProfileScreen(),
     ];
   }
 
   void _onItemTapped(int index) {
+    if (index == 0 && _selectedIndex != 0) {
+      _dashboardKey.currentState?.refresh();
+    }
     setState(() {
       _selectedIndex = index;
     });
@@ -43,10 +43,12 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final titles = _getTitles(context);
 
     return Scaffold(
-      body: _screens[_selectedIndex],
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _screens,
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.only(
@@ -101,5 +103,27 @@ class _MainScreenState extends State<MainScreen> {
         ),
       ),
     );
+  }
+}
+
+class _DashboardRefreshProxy extends StatefulWidget {
+  const _DashboardRefreshProxy({super.key});
+
+  @override
+  State<_DashboardRefreshProxy> createState() =>
+      _DashboardRefreshProxyState();
+}
+
+class _DashboardRefreshProxyState extends State<_DashboardRefreshProxy> {
+  final GlobalKey<DashboardScreenState> _dashboardScreenKey =
+      GlobalKey<DashboardScreenState>();
+
+  void refresh() {
+    _dashboardScreenKey.currentState?.refreshFromParent();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DashboardScreen(key: _dashboardScreenKey);
   }
 }

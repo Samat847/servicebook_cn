@@ -33,6 +33,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   bool _hasReceiptPhoto = false;
   String? _receiptPhotoPath;
   bool _isConfirmed = false;
+  bool _isPartner = false;
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -77,6 +78,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       _hasReceiptPhoto = expense.hasReceipt;
       _receiptPhotoPath = expense.receiptPhotoPath;
       _isConfirmed = expense.isConfirmed;
+      _isPartner = expense.isPartner;
       _selectedCategory = expense.category;
       _selectedWorkTypes.addAll(expense.workTypes);
     } else {
@@ -178,6 +180,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         hasReceipt: _hasReceiptPhoto,
         receiptPhotoPath: _receiptPhotoPath,
         isConfirmed: _isConfirmed,
+        isPartner: _isPartner,
         createdAt: widget.existingExpense?.createdAt ?? DateTime.now(),
       );
 
@@ -746,6 +749,52 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                         fontSize: 13,
                         color: _isConfirmed ? Colors.green.shade700 : Colors.red.shade700,
                         fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Партнёрская покупка
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.green.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Checkbox(
+                            value: _isPartner,
+                            onChanged: (value) {
+                              setState(() {
+                                _isPartner = value ?? false;
+                              });
+                            },
+                            activeColor: Colors.green,
+                          ),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Покупка у партнёра',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Отметьте, если покупка совершена у партнёра приложения — мы учтём скидку в статистике экономии.',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

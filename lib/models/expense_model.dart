@@ -48,6 +48,7 @@ class Expense {
   final String? receiptPhotoPath;
   final List<String> photoPaths;
   final bool isConfirmed;
+  final bool isPartner;
   final DateTime createdAt;
 
   Expense({
@@ -65,6 +66,7 @@ class Expense {
     this.receiptPhotoPath,
     this.photoPaths = const [],
     this.isConfirmed = false,
+    this.isPartner = false,
     required this.createdAt,
   });
 
@@ -84,6 +86,7 @@ class Expense {
       receiptPhotoPath: json['receiptPhotoPath'] as String?,
       photoPaths: (json['photoPaths'] as List<dynamic>?)?.cast<String>() ?? [],
       isConfirmed: json['isConfirmed'] as bool? ?? false,
+      isPartner: json['isPartner'] as bool? ?? false,
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
@@ -104,6 +107,7 @@ class Expense {
       'receiptPhotoPath': receiptPhotoPath,
       'photoPaths': photoPaths,
       'isConfirmed': isConfirmed,
+      'isPartner': isPartner,
       'createdAt': createdAt.toIso8601String(),
     };
   }
@@ -123,6 +127,7 @@ class Expense {
     String? receiptPhotoPath,
     List<String>? photoPaths,
     bool? isConfirmed,
+    bool? isPartner,
     DateTime? createdAt,
   }) {
     return Expense(
@@ -140,6 +145,7 @@ class Expense {
       receiptPhotoPath: receiptPhotoPath ?? this.receiptPhotoPath,
       photoPaths: photoPaths ?? this.photoPaths,
       isConfirmed: isConfirmed ?? this.isConfirmed,
+      isPartner: isPartner ?? this.isPartner,
       createdAt: createdAt ?? this.createdAt,
     );
   }
