@@ -469,7 +469,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   String _buildFuelStat(List<Expense> expenses) {
     final fuelExpenses =
         expenses.where((e) => e.category == ExpenseCategory.fuel).toList();
-    if (fuelExpenses.isEmpty) return '➕ Добавить';
+    if (fuelExpenses.isEmpty) return '';
     final latest = fuelExpenses.first;
     final liters = latest.amount / _avgFuelPricePerLiter;
     return 'Последняя: ${liters.toStringAsFixed(0)} л';
@@ -478,14 +478,14 @@ class DashboardScreenState extends State<DashboardScreen> {
   String _buildWashStat(List<Expense> expenses) {
     final washExpenses =
         expenses.where((e) => e.category == ExpenseCategory.wash).toList();
-    if (washExpenses.isEmpty) return '➕ Добавить';
+    if (washExpenses.isEmpty) return '';
     final latest = washExpenses.first;
     final days = DateTime.now().difference(latest.date).inDays;
     return _formatDaysAgo(days);
   }
 
   String _buildServiceStat() {
-    if (!_hasServiceData) return '➕ Добавить';
+    if (!_hasServiceData) return '';
     if (_isServiceOverdue) return 'Просрочено!';
     return 'Осталось ${_formatNumber(_nextServiceMileage)} км';
   }
@@ -782,6 +782,100 @@ class DashboardScreenState extends State<DashboardScreen> {
                         children: [
                           Expanded(
                             child: _buildGradientAction(
+                              key: const Key('add_service_button'),
+                              icon: Icons.add,
+                              label: l10n?.addRecord ?? 'Добавить запись',
+                              stat: '',
+                              colors: const [
+                                Color(0xFF1565C0),
+                                Color(0xFF42A5F5),
+                              ],
+                              onTap: () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AddServiceScreen(
+                                        car: _selectedCar!),
+                                  ),
+                                );
+                                if (result == true) await _refreshData();
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildGradientAction(
+                              key: const Key('sell_report_button'),
+                              icon: Icons.description,
+                              label:
+                                  l10n?.sellReport ?? 'Отчет для продажи',
+                              stat: '',
+                              colors: const [
+                                Color(0xFF2E7D32),
+                                Color(0xFF66BB6A),
+                              ],
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        SellReportScreen(car: _selectedCar!),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildGradientAction(
+                              key: const Key('analytics_button'),
+                              icon: Icons.insights,
+                              label: l10n?.analytics ?? 'Аналитика',
+                              stat: '',
+                              colors: const [
+                                Color(0xFF6A1B9A),
+                                Color(0xFFBA68C8),
+                              ],
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ExpenseAnalyticsScreen(
+                                            car: _selectedCar!),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildGradientAction(
+                              icon: Icons.people,
+                              label: 'Партнёры СТО',
+                              stat: '',
+                              colors: const [
+                                Color(0xFFE65100),
+                                Color(0xFFFF8A65),
+                              ],
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        PartnersScreen(car: _selectedCar),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildGradientAction(
                               icon: Icons.local_gas_station,
                               label: l10n?.refuel ?? 'Заправить',
                               stat: _fuelStat,
@@ -880,100 +974,6 @@ class DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                 );
                                 if (result == true) await _refreshData();
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildGradientAction(
-                              key: const Key('add_service_button'),
-                              icon: Icons.add_circle_outline,
-                              label: l10n?.addRecord ?? 'Добавить запись',
-                              stat: '',
-                              colors: const [
-                                Color(0xFF1565C0),
-                                Color(0xFF42A5F5),
-                              ],
-                              onTap: () async {
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => AddServiceScreen(
-                                        car: _selectedCar!),
-                                  ),
-                                );
-                                if (result == true) await _refreshData();
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _buildGradientAction(
-                              key: const Key('sell_report_button'),
-                              icon: Icons.description_outlined,
-                              label:
-                                  l10n?.sellReport ?? 'Отчет для продажи',
-                              stat: '',
-                              colors: const [
-                                Color(0xFF2E7D32),
-                                Color(0xFF66BB6A),
-                              ],
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        SellReportScreen(car: _selectedCar!),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _buildGradientAction(
-                              key: const Key('analytics_button'),
-                              icon: Icons.insights_outlined,
-                              label: l10n?.analytics ?? 'Аналитика',
-                              stat: '',
-                              colors: const [
-                                Color(0xFF6A1B9A),
-                                Color(0xFFBA68C8),
-                              ],
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        ExpenseAnalyticsScreen(
-                                            car: _selectedCar!),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _buildGradientAction(
-                              icon: Icons.handshake_outlined,
-                              label: 'Партнёры СТО',
-                              stat: '',
-                              colors: const [
-                                Color(0xFFE65100),
-                                Color(0xFFFF8A65),
-                              ],
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        PartnersScreen(car: _selectedCar),
-                                  ),
-                                );
                               },
                             ),
                           ),
