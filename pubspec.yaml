@@ -40,6 +40,7 @@ dependencies:
   
   # URL launcher for email
   url_launcher: ^6.2.0
+  geolocator: ^10.1.0
 
 dev_dependencies:
   flutter_test:
