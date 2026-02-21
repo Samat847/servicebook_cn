@@ -8,11 +8,15 @@ import '../services/notification_service.dart';
 class AddServiceScreen extends StatefulWidget {
   final Car car;
   final Expense? existingExpense;
+  final ExpenseCategory? initialCategory;
+  final String? initialWorkType;
 
   const AddServiceScreen({
     super.key, 
     required this.car,
     this.existingExpense,
+    this.initialCategory,
+    this.initialWorkType,
   });
 
   @override
@@ -49,6 +53,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     {'name': 'Ремонт', 'value': ExpenseCategory.repair, 'icon': Icons.car_repair, 'color': Colors.red},
     {'name': 'Топливо', 'value': ExpenseCategory.fuel, 'icon': Icons.local_gas_station, 'color': Colors.orange},
     {'name': 'Мойка', 'value': ExpenseCategory.wash, 'icon': Icons.local_car_wash, 'color': Colors.green},
+    {'name': 'Шины', 'value': ExpenseCategory.tires, 'icon': Icons.tire_repair, 'color': Colors.brown},
     {'name': 'Запчасти', 'value': ExpenseCategory.parts, 'icon': Icons.shopping_bag, 'color': Colors.purple},
     {'name': 'Страховка', 'value': ExpenseCategory.insurance, 'icon': Icons.security, 'color': Colors.indigo},
     {'name': 'Диагностика', 'value': ExpenseCategory.diagnostics, 'icon': Icons.search, 'color': Colors.teal},
@@ -74,8 +79,16 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       _isConfirmed = expense.isConfirmed;
       _selectedCategory = expense.category;
       _selectedWorkTypes.addAll(expense.workTypes);
-    } else if (widget.car.mileage != null) {
-      _mileageController.text = widget.car.mileage.toString();
+    } else {
+      if (widget.car.mileage != null) {
+        _mileageController.text = widget.car.mileage.toString();
+      }
+      if (widget.initialCategory != null) {
+        _selectedCategory = widget.initialCategory!;
+      }
+      if (widget.initialWorkType != null) {
+        _selectedWorkTypes.add(widget.initialWorkType!);
+      }
     }
   }
 

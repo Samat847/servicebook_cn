@@ -179,6 +179,27 @@ class AppLocalizations {
       'applyingLanguage': 'Применяем язык...',
       'languageChangedTo': 'Язык изменён на',
       'languageChangeError': 'Ошибка смены языка:',
+      
+      // Quick Actions and Smart Tips
+      'quickActions': 'Быстрые действия',
+      'smartTips': 'Умные подсказки',
+      'refuel': 'Заправить',
+      'carWash': 'Мойка',
+      'service': 'ТО',
+      'tires': 'Шины',
+      'avgConsumption': 'Ср. расход',
+      'untilNextService': 'До ТО',
+      'untilNextServiceShort': 'км',
+      'documentExpiring': 'истекает через',
+      'documentDays': 'дн.',
+      'monthlySpending': 'Расходы за месяц',
+      'reminder': 'Напоминание',
+      'checkTirePressure': 'Проверьте давление в шинах',
+      'tipAddFirstRecord': 'Добавьте первую запись',
+      'tipAdvice': 'Совет',
+      'fuelWorkType': 'Топливо',
+      'washWorkType': 'Мойка',
+      'tiresWorkType': 'Резина',
     },
     'en': {
       'appTitle': 'ServiceBook',
@@ -347,6 +368,27 @@ class AppLocalizations {
       'applyingLanguage': 'Applying language...',
       'languageChangedTo': 'Language changed to',
       'languageChangeError': 'Language change error:',
+      
+      // Quick Actions and Smart Tips
+      'quickActions': 'Quick Actions',
+      'smartTips': 'Smart Tips',
+      'refuel': 'Refuel',
+      'carWash': 'Car Wash',
+      'service': 'Service',
+      'tires': 'Tires',
+      'avgConsumption': 'Avg. consumption',
+      'untilNextService': 'Until next service',
+      'untilNextServiceShort': 'km',
+      'documentExpiring': 'expires in',
+      'documentDays': 'days',
+      'monthlySpending': 'Monthly spending',
+      'reminder': 'Reminder',
+      'checkTirePressure': 'Check tire pressure',
+      'tipAddFirstRecord': 'Add your first record',
+      'tipAdvice': 'Advice',
+      'fuelWorkType': 'Fuel',
+      'washWorkType': 'Car Wash',
+      'tiresWorkType': 'Tires',
     },
     'kk': {
       'appTitle': 'ServiceBook',
@@ -515,6 +557,27 @@ class AppLocalizations {
       'applyingLanguage': 'Тілді қолдану...',
       'languageChangedTo': 'Тіл өзгертілді',
       'languageChangeError': 'Тіл өзгерту қатесі:',
+      
+      // Quick Actions and Smart Tips
+      'quickActions': 'Жылдам әрекеттер',
+      'smartTips': 'Смарт кеңестер',
+      'refuel': 'Құю',
+      'carWash': 'Жуу',
+      'service': 'Қызмет көрсету',
+      'tires': 'Дөңгелектер',
+      'avgConsumption': 'Орташа шығын',
+      'untilNextService': 'Келесі қызметке дейін',
+      'untilNextServiceShort': 'км',
+      'documentExpiring': 'мерзімі аяқталады',
+      'documentDays': 'күн',
+      'monthlySpending': 'Айлық шығыстар',
+      'reminder': 'Еске салу',
+      'checkTirePressure': 'Дөңгелек қысымын тексеріңіз',
+      'tipAddFirstRecord': 'Бірінші жазба қосыңыз',
+      'tipAdvice': 'Кеңес',
+      'fuelWorkType': 'Отын',
+      'washWorkType': 'Жуу',
+      'tiresWorkType': 'Дөңгелектер',
     },
   };
   
@@ -681,6 +744,27 @@ class AppLocalizations {
   String get applyingLanguage => _localizedValues[locale.languageCode]?['applyingLanguage'] ?? _localizedValues['ru']!['applyingLanguage']!;
   String get languageChangedTo => _localizedValues[locale.languageCode]?['languageChangedTo'] ?? _localizedValues['ru']!['languageChangedTo']!;
   String get languageChangeError => _localizedValues[locale.languageCode]?['languageChangeError'] ?? _localizedValues['ru']!['languageChangeError']!;
+  
+  // Quick Actions and Smart Tips
+  String get quickActions => _localizedValues[locale.languageCode]?['quickActions'] ?? _localizedValues['ru']!['quickActions']!;
+  String get smartTips => _localizedValues[locale.languageCode]?['smartTips'] ?? _localizedValues['ru']!['smartTips']!;
+  String get refuel => _localizedValues[locale.languageCode]?['refuel'] ?? _localizedValues['ru']!['refuel']!;
+  String get carWash => _localizedValues[locale.languageCode]?['carWash'] ?? _localizedValues['ru']!['carWash']!;
+  String get service => _localizedValues[locale.languageCode]?['service'] ?? _localizedValues['ru']!['service']!;
+  String get tires => _localizedValues[locale.languageCode]?['tires'] ?? _localizedValues['ru']!['tires']!;
+  String get avgConsumption => _localizedValues[locale.languageCode]?['avgConsumption'] ?? _localizedValues['ru']!['avgConsumption']!;
+  String get untilNextService => _localizedValues[locale.languageCode]?['untilNextService'] ?? _localizedValues['ru']!['untilNextService']!;
+  String get untilNextServiceShort => _localizedValues[locale.languageCode]?['untilNextServiceShort'] ?? _localizedValues['ru']!['untilNextServiceShort']!;
+  String get documentExpiring => _localizedValues[locale.languageCode]?['documentExpiring'] ?? _localizedValues['ru']!['documentExpiring']!;
+  String get documentDays => _localizedValues[locale.languageCode]?['documentDays'] ?? _localizedValues['ru']!['documentDays']!;
+  String get monthlySpending => _localizedValues[locale.languageCode]?['monthlySpending'] ?? _localizedValues['ru']!['monthlySpending']!;
+  String get reminder => _localizedValues[locale.languageCode]?['reminder'] ?? _localizedValues['ru']!['reminder']!;
+  String get checkTirePressure => _localizedValues[locale.languageCode]?['checkTirePressure'] ?? _localizedValues['ru']!['checkTirePressure']!;
+  String get tipAddFirstRecord => _localizedValues[locale.languageCode]?['tipAddFirstRecord'] ?? _localizedValues['ru']!['tipAddFirstRecord']!;
+  String get tipAdvice => _localizedValues[locale.languageCode]?['tipAdvice'] ?? _localizedValues['ru']!['tipAdvice']!;
+  String get fuelWorkType => _localizedValues[locale.languageCode]?['fuelWorkType'] ?? _localizedValues['ru']!['fuelWorkType']!;
+  String get washWorkType => _localizedValues[locale.languageCode]?['washWorkType'] ?? _localizedValues['ru']!['washWorkType']!;
+  String get tiresWorkType => _localizedValues[locale.languageCode]?['tiresWorkType'] ?? _localizedValues['ru']!['tiresWorkType']!;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
