@@ -28,8 +28,8 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _screens = [
       _DashboardRefreshProxy(key: _dashboardKey),
-      const ExpertScreen(),
       const HomeScreen(),
+      const ExpertScreen(),
       const PartnersScreen(),
       _UserProfileRefreshProxy(key: _profileKey),
     ];
@@ -45,6 +45,55 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  Widget _buildExpertIcon(bool isSelected) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: isSelected
+                ? const Color(0xFFFF8C00).withOpacity(0.15)
+                : Colors.transparent,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            isSelected ? Icons.smart_toy : Icons.smart_toy_outlined,
+            color: isSelected ? const Color(0xFFFF8C00) : Colors.grey,
+            size: 26,
+          ),
+        ),
+        Positioned(
+          top: -4,
+          right: -2,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF8C00),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFF8C00).withOpacity(0.4),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: const Text(
+              'AI',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 8,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -80,10 +129,14 @@ class _MainScreenState extends State<MainScreen> {
             onTap: _onItemTapped,
             type: BottomNavigationBarType.fixed,
             backgroundColor: Colors.white,
-            selectedItemColor: Colors.blue,
+            selectedItemColor: _selectedIndex == 2
+                ? const Color(0xFFFF8C00)
+                : Colors.blue,
             unselectedItemColor: Colors.grey,
             selectedLabelStyle: const TextStyle(fontSize: 12),
             unselectedLabelStyle: const TextStyle(fontSize: 12),
+            selectedFontSize: 12,
+            unselectedFontSize: 12,
             items: [
               BottomNavigationBarItem(
                 icon: const Icon(Icons.home_outlined),
@@ -91,14 +144,14 @@ class _MainScreenState extends State<MainScreen> {
                 label: l10n?.dashboardTitle ?? 'Главная',
               ),
               BottomNavigationBarItem(
-                icon: const Icon(Icons.smart_toy_outlined),
-                activeIcon: const Icon(Icons.smart_toy),
-                label: l10n?.expert ?? 'Эксперт',
-              ),
-              BottomNavigationBarItem(
                 icon: const Icon(Icons.directions_car_outlined),
                 activeIcon: const Icon(Icons.directions_car),
                 label: l10n?.garage ?? 'Авто',
+              ),
+              BottomNavigationBarItem(
+                icon: _buildExpertIcon(false),
+                activeIcon: _buildExpertIcon(true),
+                label: l10n?.expert ?? 'Эксперт',
               ),
               BottomNavigationBarItem(
                 icon: const Icon(Icons.map_outlined),
