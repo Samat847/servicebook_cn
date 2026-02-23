@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import 'dashboard_screen.dart';
+import 'expert_screen.dart';
 import 'home_screen.dart';
 import 'partners_screen.dart';
 import 'user_profile_screen.dart';
@@ -27,6 +28,7 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _screens = [
       _DashboardRefreshProxy(key: _dashboardKey),
+      const ExpertScreen(),
       const HomeScreen(),
       const PartnersScreen(),
       _UserProfileRefreshProxy(key: _profileKey),
@@ -37,7 +39,7 @@ class _MainScreenState extends State<MainScreen> {
     if (index == 0 && _selectedIndex != 0) {
       _dashboardKey.currentState?.refresh();
     }
-    if (index == 3 && _selectedIndex != 3) {
+    if (index == 4 && _selectedIndex != 4) {
       _profileKey.currentState?.refresh();
     }
     setState(() {
@@ -87,6 +89,11 @@ class _MainScreenState extends State<MainScreen> {
                 icon: const Icon(Icons.home_outlined),
                 activeIcon: const Icon(Icons.home),
                 label: l10n?.dashboardTitle ?? 'Главная',
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.smart_toy_outlined),
+                activeIcon: const Icon(Icons.smart_toy),
+                label: l10n?.expert ?? 'Эксперт',
               ),
               BottomNavigationBarItem(
                 icon: const Icon(Icons.directions_car_outlined),

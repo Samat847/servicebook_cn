@@ -200,6 +200,19 @@ class AppLocalizations {
       'fuelWorkType': 'Топливо',
       'washWorkType': 'Мойка',
       'tiresWorkType': 'Резина',
+      
+      // ExpertScreen
+      'expert': 'Эксперт',
+      'expertTitle': 'Эксперт',
+      'expertSubtitle': 'Чат по китайским автомобилям • AI-режим',
+      'expertWelcomeMessage': 'Привет! Я AI-эксперт по китайским автомобилям.\n\nЯ могу помочь вам с:\n• Подбором масла и расходников\n• Расшифровкой ошибок OBD\n• Советами по ТО и ремонту\n• Анализом типичных проблем',
+      'expertUserQuestion': 'Какое масло лучше заливать в Chery Tiggo 7 Pro?',
+      'expertAnswer': 'Для Chery Tiggo 7 Pro рекомендую:\n\n• Моторное масло: 5W-30 (полусинтетика или синтетика)\n• Объём: ~4.5 литра (с фильтром)\n• Стандарт: API SN/SP, ACEA C3\n• Примеры: Shell Helix HX7, Mobil Super 3000, Gazpromneft Premium N',
+      'expertChipOil': 'Масло для Chery',
+      'expertChipService': 'Когда следующее ТО?',
+      'expertQuickDecode': 'Расшифровать код ошибки P0171',
+      'expertInputHint': 'Опишите вопрос или вставьте текст ошибки с панели',
+      'expertFooterNote': 'Эксперт учитывает историю расходов и ТО из раздела "Мой гараж"',
     },
     'en': {
       'appTitle': 'ServiceBook',
@@ -389,6 +402,19 @@ class AppLocalizations {
       'fuelWorkType': 'Fuel',
       'washWorkType': 'Car Wash',
       'tiresWorkType': 'Tires',
+      
+      // ExpertScreen
+      'expert': 'Expert',
+      'expertTitle': 'Expert',
+      'expertSubtitle': 'Chinese Cars Chat • AI Mode',
+      'expertWelcomeMessage': 'Hi! I am an AI expert on Chinese cars.\n\nI can help you with:\n• Oil and consumables selection\n• OBD error decoding\n• Maintenance and repair advice\n• Typical problems analysis',
+      'expertUserQuestion': 'What oil is best for Chery Tiggo 7 Pro?',
+      'expertAnswer': 'For Chery Tiggo 7 Pro I recommend:\n\n• Engine oil: 5W-30 (semi-synthetic or synthetic)\n• Volume: ~4.5 liters (with filter)\n• Standard: API SN/SP, ACEA C3\n• Examples: Shell Helix HX7, Mobil Super 3000, Gazpromneft Premium N',
+      'expertChipOil': 'Oil for Chery',
+      'expertChipService': 'When is the next service?',
+      'expertQuickDecode': 'Decode error code P0171',
+      'expertInputHint': 'Describe your question or paste error text from the panel',
+      'expertFooterNote': 'Expert considers expense and service history from "My Garage" section',
     },
     'kk': {
       'appTitle': 'ServiceBook',
@@ -578,6 +604,19 @@ class AppLocalizations {
       'fuelWorkType': 'Отын',
       'washWorkType': 'Жуу',
       'tiresWorkType': 'Дөңгелектер',
+      
+      // ExpertScreen
+      'expert': 'Сарапшы',
+      'expertTitle': 'Сарапшы',
+      'expertSubtitle': 'Қытай автокөліктері чаты • AI режимі',
+      'expertWelcomeMessage': 'Сәлем! Мен қытай автокөліктері бойынша AI-сарапшымын.\n\nМен сізге көмектесе аламын:\n• Май және тұтынables таңдау\n• OBD қателерін декодтау\n• Техникалық қызмет көрсету және жөндеу кеңестері\n• Типтік мәселелерді талдау',
+      'expertUserQuestion': 'Chery Tiggo 7 Pro үшін қандай майды құю керек?',
+      'expertAnswer': 'Chery Tiggo 7 Pro үшін ұсынамын:\n\n• Қозғалтқыш майы: 5W-30 (жартылай синтетика немесе синтетика)\n• Көлемі: ~4.5 литр (сүзгімен)\n• Стандарты: API SN/SP, ACEA C3\n• Мысалдары: Shell Helix HX7, Mobil Super 3000, Gazpromneft Premium N',
+      'expertChipOil': 'Chery үшін май',
+      'expertChipService': 'Келесі ТО қашан?',
+      'expertQuickDecode': 'P0171 қате кодын декодтау',
+      'expertInputHint': 'Сұрақты сипаттаңыз немесе панельден қате мәтінін қойыңыз',
+      'expertFooterNote': 'Сарапшы "Менің гаражым" бөліміндегі шығындар мен ТО тарихын ескереді',
     },
   };
   
@@ -765,6 +804,19 @@ class AppLocalizations {
   String get fuelWorkType => _localizedValues[locale.languageCode]?['fuelWorkType'] ?? _localizedValues['ru']!['fuelWorkType']!;
   String get washWorkType => _localizedValues[locale.languageCode]?['washWorkType'] ?? _localizedValues['ru']!['washWorkType']!;
   String get tiresWorkType => _localizedValues[locale.languageCode]?['tiresWorkType'] ?? _localizedValues['ru']!['tiresWorkType']!;
+  
+  // ExpertScreen getters
+  String get expert => _localizedValues[locale.languageCode]?['expert'] ?? _localizedValues['ru']!['expert']!;
+  String get expertTitle => _localizedValues[locale.languageCode]?['expertTitle'] ?? _localizedValues['ru']!['expertTitle']!;
+  String get expertSubtitle => _localizedValues[locale.languageCode]?['expertSubtitle'] ?? _localizedValues['ru']!['expertSubtitle']!;
+  String get expertWelcomeMessage => _localizedValues[locale.languageCode]?['expertWelcomeMessage'] ?? _localizedValues['ru']!['expertWelcomeMessage']!;
+  String get expertUserQuestion => _localizedValues[locale.languageCode]?['expertUserQuestion'] ?? _localizedValues['ru']!['expertUserQuestion']!;
+  String get expertAnswer => _localizedValues[locale.languageCode]?['expertAnswer'] ?? _localizedValues['ru']!['expertAnswer']!;
+  String get expertChipOil => _localizedValues[locale.languageCode]?['expertChipOil'] ?? _localizedValues['ru']!['expertChipOil']!;
+  String get expertChipService => _localizedValues[locale.languageCode]?['expertChipService'] ?? _localizedValues['ru']!['expertChipService']!;
+  String get expertQuickDecode => _localizedValues[locale.languageCode]?['expertQuickDecode'] ?? _localizedValues['ru']!['expertQuickDecode']!;
+  String get expertInputHint => _localizedValues[locale.languageCode]?['expertInputHint'] ?? _localizedValues['ru']!['expertInputHint']!;
+  String get expertFooterNote => _localizedValues[locale.languageCode]?['expertFooterNote'] ?? _localizedValues['ru']!['expertFooterNote']!;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
