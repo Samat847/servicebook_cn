@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/car_storage.dart';
@@ -204,6 +205,90 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildCarImage(Car car) {
+    const String defaultCarImagePath = 'assets/images/in-out-chery-tiggo-7-pro-max-plus.6u7h5mnpapdf..jpg';
+    
+    return Padding(
+      padding: const EdgeInsets.only(top: 16, bottom: 8),
+      child: Center(
+        child: Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(maxHeight: 200),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.2),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: _buildImageWidget(car.imagePath ?? defaultCarImagePath),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageWidget(String imagePath) {
+    if (imagePath.startsWith('assets/')) {
+      return Image.asset(
+        imagePath,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildImageFallback();
+        },
+      );
+    } else {
+      final file = File(imagePath);
+      if (file.existsSync()) {
+        return Image.file(
+          file,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildImageFallback();
+          },
+        );
+      } else {
+        return _buildImageFallback();
+      }
+    }
+  }
+
+  Widget _buildImageFallback() {
+    return Container(
+      width: double.infinity,
+      height: 150,
+      decoration: BoxDecoration(
+        color: primaryColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.directions_car,
+            size: 48,
+            color: primaryColor.withOpacity(0.5),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Фото недоступно',
+            style: TextStyle(
+              fontSize: 12,
+              color: secondaryTextColor.withOpacity(0.7),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildErrorState() {
     return Center(
       child: Padding(
@@ -244,10 +329,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return RefreshIndicator(
       onRefresh: _loadCars,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (_cars.isNotEmpty) _buildCarImage(_cars.first),
+            
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               child: Text(
