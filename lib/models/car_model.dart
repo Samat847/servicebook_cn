@@ -9,6 +9,7 @@ class Car {
   final String? plate;
   final DateTime addedDate;
   final int? mileage;
+  final String? imagePath;
 
   Car({
     required this.id,
@@ -19,6 +20,7 @@ class Car {
     this.plate,
     required this.addedDate,
     this.mileage,
+    this.imagePath,
   });
 
   factory Car.fromJson(Map<String, dynamic> json) {
@@ -31,6 +33,7 @@ class Car {
       plate: json['plate'] as String?,
       addedDate: DateTime.tryParse(json['addedDate'] as String? ?? '') ?? DateTime.now(),
       mileage: json['mileage'] as int?,
+      imagePath: json['imagePath'] as String?,
     );
   }
 
@@ -44,6 +47,7 @@ class Car {
       'plate': plate,
       'addedDate': addedDate.toIso8601String(),
       'mileage': mileage,
+      'imagePath': imagePath,
     };
   }
 
@@ -56,6 +60,7 @@ class Car {
     String? plate,
     DateTime? addedDate,
     int? mileage,
+    String? imagePath,
   }) {
     return Car(
       id: id ?? this.id,
@@ -66,6 +71,7 @@ class Car {
       plate: plate ?? this.plate,
       addedDate: addedDate ?? this.addedDate,
       mileage: mileage ?? this.mileage,
+      imagePath: imagePath ?? this.imagePath,
     );
   }
 
