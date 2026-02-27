@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../widgets/background_scaffold.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/models.dart';
 import '../services/car_storage.dart';
@@ -229,7 +228,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BackgroundScaffold(
+    return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,

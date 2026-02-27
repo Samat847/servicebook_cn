@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/background_scaffold.dart';
 import '../models/models.dart';
 import '../services/car_storage.dart';
 import 'add_service_screen.dart';
@@ -139,7 +138,7 @@ class _AllRecordsScreenState extends State<AllRecordsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BackgroundScaffold(
+    return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,

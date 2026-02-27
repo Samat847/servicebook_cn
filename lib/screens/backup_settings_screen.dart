@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../widgets/background_scaffold.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -189,7 +188,7 @@ class _BackupSettingsScreenState extends State<BackupSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BackgroundScaffold(
+    return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,

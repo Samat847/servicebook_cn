@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/background_scaffold.dart';
 import '../l10n/app_localizations.dart';
 
 class ExpertScreen extends StatelessWidget {
@@ -9,7 +8,7 @@ class ExpertScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return BackgroundScaffold(
+    return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,

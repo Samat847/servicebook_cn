@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import '../widgets/background_scaffold.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
@@ -540,13 +539,13 @@ class DashboardScreenState extends State<DashboardScreen> {
     final l10n = AppLocalizations.of(context);
 
     if (_isLoading) {
-      return const BackgroundScaffold(
+      return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_errorMessage != null) {
-      return BackgroundScaffold(
+      return Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -569,7 +568,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     }
 
     if (_selectedCar == null) {
-      return BackgroundScaffold(
+      return Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -595,7 +594,7 @@ class DashboardScreenState extends State<DashboardScreen> {
 
     return RefreshIndicator(
       onRefresh: _refreshData,
-      child: BackgroundScaffold(
+      child: Scaffold(
         body: CustomScrollView(
           slivers: [
             SliverAppBar(

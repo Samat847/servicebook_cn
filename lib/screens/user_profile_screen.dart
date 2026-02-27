@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/background_scaffold.dart';
 import '../models/models.dart';
 import '../services/car_storage.dart';
 import '../l10n/app_localizations.dart';
@@ -97,7 +96,7 @@ class UserProfileScreenState extends State<UserProfileScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     
-    return BackgroundScaffold(
+    return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

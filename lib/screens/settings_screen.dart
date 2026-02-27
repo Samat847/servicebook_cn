@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/background_scaffold.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'profile_edit_screen.dart';
@@ -61,7 +60,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final l10n = AppLocalizations.of(context);
     final localeProvider = Provider.of<LocaleProvider>(context, listen: true);
     
-    return BackgroundScaffold(
+    return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,
