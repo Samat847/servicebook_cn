@@ -24,25 +24,42 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _initializeVideo() async {
+    debugPrint('[SplashScreen] Starting video initialization...');
+    
     try {
       _controller = VideoPlayerController.asset(
         'assets/videos/Untitled_Video_2026-02-25_18-08.mp4',
       );
 
       await _controller!.initialize();
+      
+      debugPrint('[SplashScreen] Video initialized successfully');
+      debugPrint('[SplashScreen] Video size: ${_controller!.value.size}');
+      debugPrint('[SplashScreen] Video duration: ${_controller!.value.duration}');
+      debugPrint('[SplashScreen] Aspect ratio: ${_controller!.value.aspectRatio}');
 
-      if (!mounted) return;
+      if (!mounted) {
+        debugPrint('[SplashScreen] Widget not mounted after initialization');
+        return;
+      }
 
       setState(() {
         _isInitialized = true;
       });
 
       _controller!.setLooping(false);
+      
+      // Set volume to 0 for iOS autoplay compatibility
+      await _controller!.setVolume(0);
+      
       _controller!.play();
+      debugPrint('[SplashScreen] Video playback started');
 
       _controller!.addListener(_onVideoProgress);
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('[SplashScreen] Video initialization error: $e');
+      debugPrint('[SplashScreen] Stack trace: $stackTrace');
+      
       if (mounted) {
         setState(() {
           _hasError = true;
@@ -56,13 +73,19 @@ class _SplashScreenState extends State<SplashScreen> {
   void _onVideoProgress() {
     if (_controller == null) return;
 
-    final position = _controller!.value.position;
-    final duration = _controller!.value.duration;
+    final value = _controller!.value;
+    
+    // Skip if not initialized or duration is zero
+    if (!value.isInitialized || value.duration == Duration.zero) return;
+
+    final position = value.position;
+    final duration = value.duration;
 
     // Navigate when video is near completion
     if (duration.inMilliseconds > 0 &&
         position.inMilliseconds >= duration.inMilliseconds - 100 &&
         !_isNavigating) {
+      debugPrint('[SplashScreen] Video near completion, navigating...');
       _isNavigating = true;
       _navigateToNextScreen();
     }
@@ -112,14 +135,16 @@ class _SplashScreenState extends State<SplashScreen> {
         body: Stack(
           fit: StackFit.expand,
           children: [
-            // Video player
-            if (_isInitialized && _controller != null)
+            // Video player with safe dimension checks
+            if (_isInitialized && 
+                _controller != null && 
+                _controller!.value.isInitialized &&
+                _controller!.value.aspectRatio > 0)
               SizedBox.expand(
                 child: FittedBox(
                   fit: BoxFit.cover,
-                  child: SizedBox(
-                    width: _controller!.value.size.width,
-                    height: _controller!.value.size.height,
+                  child: AspectRatio(
+                    aspectRatio: _controller!.value.aspectRatio,
                     child: VideoPlayer(_controller!),
                   ),
                 ),
