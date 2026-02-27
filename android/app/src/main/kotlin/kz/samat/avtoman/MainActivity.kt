@@ -1,4 +1,4 @@
-package com.example.servicebook_cn
+package kz.samat.avtoman
 
 import io.flutter.embedding.android.FlutterActivity
 

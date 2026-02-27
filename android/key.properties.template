@@ -1,0 +1,7 @@
+# Copy this file to key.properties and fill in your keystore details
+# For CI/CD builds, use environment variables instead (KEYSTORE_PATH, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD)
+
+storePassword=YOUR_KEYSTORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=YOUR_KEY_ALIAS
+storeFile=../app/keystore.jks
