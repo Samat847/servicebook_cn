@@ -15,7 +15,11 @@
     <application
         android:label="AvtoMAN"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="false"
+        android:extractNativeLibs="true"
+        android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_rules">
         
         <!-- Google Maps API Key -->
         <meta-data
