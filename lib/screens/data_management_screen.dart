@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../widgets/background_scaffold.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -61,7 +62,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
             '${tempDir.path}/servicebook_export_${DateTime.now().millisecondsSinceEpoch}.json');
         await file.writeAsString(jsonString);
 
-        await Share.shareXFiles([XFile(file.path)], text: 'ServiceBook данные');
+        await Share.shareXFiles([XFile(file.path)], text: 'AvtoMAN данные');
       } else if (format == 'PDF') {
         final pdf = pw.Document();
 
@@ -71,7 +72,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
             build: (context) => [
               pw.Header(
                 level: 0,
-                child: pw.Text('ServiceBook — Отчёт',
+                child: pw.Text('AvtoMAN — Отчёт',
                     style: pw.TextStyle(
                         fontSize: 24, fontWeight: pw.FontWeight.bold)),
               ),
@@ -284,7 +285,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
   Widget build(BuildContext context) {
     final storagePercent = (_usedStorage / _totalStorage * 100).clamp(0, 100);
 
-    return Scaffold(
+    return BackgroundScaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/background_scaffold.dart';
 import '../models/models.dart';
 
 class SellReportScreen extends StatelessWidget {
@@ -8,7 +9,7 @@ class SellReportScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BackgroundScaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,

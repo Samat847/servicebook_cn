@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../widgets/background_scaffold.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -91,7 +92,7 @@ class _BackupSettingsScreenState extends State<BackupSettingsScreen> {
       await _saveBackupHistory();
 
       // Поделиться файлом
-      await Share.shareXFiles([XFile(file.path)], text: 'ServiceBook backup');
+      await Share.shareXFiles([XFile(file.path)], text: 'AvtoMAN backup');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -188,7 +189,7 @@ class _BackupSettingsScreenState extends State<BackupSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BackgroundScaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,

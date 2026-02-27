@@ -13,7 +13,7 @@ class AppLocalizations {
   
   static final Map<String, Map<String, String>> _localizedValues = {
     'ru': {
-      'appTitle': 'ServiceBook',
+      'appTitle': 'AvtoMAN',
       'garage': 'Гараж',
       'profile': 'Профиль',
       'settings': 'Настройки',
@@ -125,7 +125,7 @@ class AppLocalizations {
       'selectLanguageTitle': 'Язык',
       'version': 'Версия',
       'appDescription': 'Приложение для учёта обслуживания автомобилей',
-      'appAuthor': '© 2024 ServiceBook',
+      'appAuthor': '© 2024 AvtoMAN',
       'dashboardTitle': 'Главная',
       'mapTitle': 'Карта',
       
@@ -215,7 +215,7 @@ class AppLocalizations {
       'expertFooterNote': 'Эксперт учитывает историю расходов и ТО из раздела "Мой гараж"',
     },
     'en': {
-      'appTitle': 'ServiceBook',
+      'appTitle': 'AvtoMAN',
       'garage': 'Garage',
       'profile': 'Profile',
       'settings': 'Settings',
@@ -327,7 +327,7 @@ class AppLocalizations {
       'selectLanguageTitle': 'Language',
       'version': 'Version',
       'appDescription': 'Car service tracking application',
-      'appAuthor': '© 2024 ServiceBook',
+      'appAuthor': '© 2024 AvtoMAN',
       'dashboardTitle': 'Home',
       'mapTitle': 'Map',
       
@@ -417,7 +417,7 @@ class AppLocalizations {
       'expertFooterNote': 'Expert considers expense and service history from "My Garage" section',
     },
     'kk': {
-      'appTitle': 'ServiceBook',
+      'appTitle': 'AvtoMAN',
       'garage': 'Гараж',
       'profile': 'Профиль',
       'settings': 'Баптаулар',
@@ -529,7 +529,7 @@ class AppLocalizations {
       'selectLanguageTitle': 'Тіл',
       'version': 'Версия',
       'appDescription': 'Автокөлік қызметін есепке алу қолданбасы',
-      'appAuthor': '© 2024 ServiceBook',
+      'appAuthor': '© 2024 AvtoMAN',
       'dashboardTitle': 'Басты бет',
       'mapTitle': 'Карта',
       

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/background_scaffold.dart';
 import 'support_screen.dart';
 
 class HelpAndFaqScreen extends StatefulWidget {
@@ -120,7 +121,7 @@ class _HelpAndFaqScreenState extends State<HelpAndFaqScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BackgroundScaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,
