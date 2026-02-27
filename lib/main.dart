@@ -5,9 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import 'screens/auth_screen.dart';
-import 'screens/main_screen.dart';
-import 'services/car_storage.dart';
+import 'screens/splash_screen.dart';
 import 'services/notification_service.dart';
 import 'providers/locale_provider.dart';
 import 'l10n/app_localizations.dart';
@@ -17,32 +15,22 @@ void main() async {
 
   tz.initializeTimeZones();
   await initializeDateFormatting('ru', null);
-  
-  await NotificationService.init();
 
-  final isAuthenticated = await CarStorage.isAuthenticated();
-  final profile = await CarStorage.loadUserProfile();
-  final hasProfile = profile.isComplete;
+  await NotificationService.init();
 
   final localeProvider = LocaleProvider();
   await localeProvider.loadLocale();
 
   runApp(MyApp(
-    isAuthenticated: isAuthenticated,
-    hasProfile: hasProfile,
     localeProvider: localeProvider,
   ));
 }
 
 class MyApp extends StatefulWidget {
-  final bool isAuthenticated;
-  final bool hasProfile;
   final LocaleProvider localeProvider;
 
   const MyApp({
     super.key,
-    required this.isAuthenticated,
-    required this.hasProfile,
     required this.localeProvider,
   });
 
@@ -84,9 +72,7 @@ class _MyAppState extends State<MyApp> {
               ),
             ),
           ),
-          home: widget.isAuthenticated
-              ? (widget.hasProfile ? const MainScreen() : const AuthScreen())
-              : const AuthScreen(),
+          home: const SplashScreen(),
         ),
       ),
     );

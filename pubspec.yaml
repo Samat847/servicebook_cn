@@ -41,6 +41,9 @@ dependencies:
   # URL launcher for email
   url_launcher: ^6.2.0
   geolocator: ^10.1.0
+  
+  # Video player for splash screen
+  video_player: ^2.8.3
 
 dev_dependencies:
   flutter_test:
@@ -53,5 +56,6 @@ flutter:
   assets:
     - assets/images/logo.png
     - assets/images/
+    - assets/videos/
 
   # Default system fonts are used (Roboto on Android)
