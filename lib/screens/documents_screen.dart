@@ -5,6 +5,7 @@ import '../services/car_storage.dart';
 import 'driver_license_screen.dart';
 import 'insurance_screen.dart';
 import 'sts_detail_screen.dart';
+import '../widgets/background_scaffold.dart';
 
 class DocumentsScreen extends StatefulWidget {
   const DocumentsScreen({super.key});
@@ -300,7 +301,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BackgroundScaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,

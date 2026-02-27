@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import 'add_car_screen.dart';
 import 'auth_screen.dart';
 import 'car_detail_screen.dart';
+import '../widgets/background_scaffold.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -578,8 +579,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body = _buildCarsList();
     }
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
+    return BackgroundScaffold(
       appBar: AppBar(
         backgroundColor: cardColor,
         elevation: 1,

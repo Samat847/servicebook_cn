@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/background_scaffold.dart';
 
 class SupportScreen extends StatefulWidget {
   const SupportScreen({super.key});
@@ -12,7 +13,7 @@ class SupportScreen extends StatefulWidget {
 class _SupportScreenState extends State<SupportScreen> {
   final TextEditingController _messageController = TextEditingController();
   
-  final String _supportEmail = 'support@servicebook.app';
+  final String _supportEmail = 'support@avtoman.app';
 
   final List<Map<String, dynamic>> _faqItems = [
     {
@@ -51,7 +52,7 @@ class _SupportScreenState extends State<SupportScreen> {
     final uri = Uri(
       scheme: 'mailto',
       path: _supportEmail,
-      query: 'subject=ServiceBook Support',
+      query: 'subject=AvtoMAN Support',
     );
     
     if (await canLaunchUrl(uri)) {
@@ -71,7 +72,7 @@ class _SupportScreenState extends State<SupportScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     
-    return Scaffold(
+    return BackgroundScaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,

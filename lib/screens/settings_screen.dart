@@ -15,6 +15,7 @@ import '../services/car_storage.dart';
 import '../providers/locale_provider.dart';
 import '../l10n/app_localizations.dart';
 import 'auth_screen.dart';
+import '../widgets/background_scaffold.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -60,7 +61,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final l10n = AppLocalizations.of(context);
     final localeProvider = Provider.of<LocaleProvider>(context, listen: true);
     
-    return Scaffold(
+    return BackgroundScaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,
