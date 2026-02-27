@@ -10,6 +10,7 @@ import 'package:printing/printing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/car_storage.dart';
+import '../widgets/background_scaffold.dart';
 
 class DataManagementScreen extends StatefulWidget {
   const DataManagementScreen({super.key});
@@ -58,10 +59,10 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
         final jsonString = const JsonEncoder.withIndent('  ').convert(data);
         final tempDir = await getTemporaryDirectory();
         final file = File(
-            '${tempDir.path}/servicebook_export_${DateTime.now().millisecondsSinceEpoch}.json');
+            '${tempDir.path}/avtoman_export_${DateTime.now().millisecondsSinceEpoch}.json');
         await file.writeAsString(jsonString);
 
-        await Share.shareXFiles([XFile(file.path)], text: 'ServiceBook данные');
+        await Share.shareXFiles([XFile(file.path)], text: 'AvtoMAN данные');
       } else if (format == 'PDF') {
         final pdf = pw.Document();
 
@@ -71,7 +72,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
             build: (context) => [
               pw.Header(
                 level: 0,
-                child: pw.Text('ServiceBook — Отчёт',
+                child: pw.Text('AvtoMAN — Отчёт',
                     style: pw.TextStyle(
                         fontSize: 24, fontWeight: pw.FontWeight.bold)),
               ),
@@ -117,7 +118,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
 
         await Printing.sharePdf(
             bytes: await pdf.save(),
-            filename: 'servicebook_report_${DateTime.now().millisecondsSinceEpoch}.pdf');
+            filename: 'avtoman_report_${DateTime.now().millisecondsSinceEpoch}.pdf');
       }
     } catch (e) {
       if (mounted) {
@@ -284,7 +285,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
   Widget build(BuildContext context) {
     final storagePercent = (_usedStorage / _totalStorage * 100).clamp(0, 100);
 
-    return Scaffold(
+    return BackgroundScaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,

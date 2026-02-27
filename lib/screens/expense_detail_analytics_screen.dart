@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/models.dart';
+import '../widgets/background_scaffold.dart';
 
 class ExpenseDetailAnalyticsScreen extends StatefulWidget {
   final Car car;
@@ -127,7 +128,7 @@ class _ExpenseDetailAnalyticsScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BackgroundScaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,

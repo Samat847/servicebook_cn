@@ -3,6 +3,7 @@ import 'dart:async';
 import 'profile_screen.dart';
 import '../services/car_storage.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/background_scaffold.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String contactInfo;
@@ -176,7 +177,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     
-    return Scaffold(
+    return BackgroundScaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),

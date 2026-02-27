@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/car_storage.dart';
+import '../widgets/background_scaffold.dart';
 
 class BackupSettingsScreen extends StatefulWidget {
   const BackupSettingsScreen({super.key});
@@ -75,7 +76,7 @@ class _BackupSettingsScreenState extends State<BackupSettingsScreen> {
       // Сохраняем в Documents через path_provider
       final dir = await getApplicationDocumentsDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileName = 'servicebook_backup_$timestamp.json';
+      final fileName = 'avtoman_backup_$timestamp.json';
       final file = File('${dir.path}/$fileName');
       await file.writeAsString(jsonString);
 
@@ -91,7 +92,7 @@ class _BackupSettingsScreenState extends State<BackupSettingsScreen> {
       await _saveBackupHistory();
 
       // Поделиться файлом
-      await Share.shareXFiles([XFile(file.path)], text: 'ServiceBook backup');
+      await Share.shareXFiles([XFile(file.path)], text: 'AvtoMAN backup');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -188,7 +189,7 @@ class _BackupSettingsScreenState extends State<BackupSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BackgroundScaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,

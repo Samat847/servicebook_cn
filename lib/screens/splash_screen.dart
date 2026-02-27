@@ -189,7 +189,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     ),
                     SizedBox(height: 16),
                     Text(
-                      'ServiceBook',
+                      'AvtoMAN',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 28,

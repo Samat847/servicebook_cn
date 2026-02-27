@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/car_storage.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/background_scaffold.dart';
 import 'add_service_screen.dart';
 import 'sell_report_screen.dart';
 import 'expense_analytics_screen.dart';
@@ -539,13 +540,13 @@ class DashboardScreenState extends State<DashboardScreen> {
     final l10n = AppLocalizations.of(context);
 
     if (_isLoading) {
-      return const Scaffold(
+      return const BackgroundScaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_errorMessage != null) {
-      return Scaffold(
+      return BackgroundScaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -568,7 +569,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     }
 
     if (_selectedCar == null) {
-      return Scaffold(
+      return BackgroundScaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -594,7 +595,7 @@ class DashboardScreenState extends State<DashboardScreen> {
 
     return RefreshIndicator(
       onRefresh: _refreshData,
-      child: Scaffold(
+      child: BackgroundScaffold(
         body: CustomScrollView(
           slivers: [
             SliverAppBar(

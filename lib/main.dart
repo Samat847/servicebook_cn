@@ -47,7 +47,7 @@ class _MyAppState extends State<MyApp> {
         builder: (_, provider, __) => MaterialApp(
           locale: provider.locale,
           debugShowCheckedModeBanner: false,
-          title: 'ServiceBook',
+          title: 'AvtoMAN',
           supportedLocales: const [Locale('ru'), Locale('en'), Locale('kk')],
           localizationsDelegates: const [
             AppLocalizations.delegate,

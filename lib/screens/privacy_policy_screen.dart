@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import '../widgets/background_scaffold.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BackgroundScaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -68,7 +69,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             // Policy content
             _buildPolicySection(
               '1. Общие положения',
-              'Настоящая Политика конфиденциальности описывает, как приложение ServiceBook ("мы", "нас" или "наше") собирает, использует и защищает информацию пользователей при использовании нашего мобильного приложения для учета обслуживания автомобилей.',
+              'Настоящая Политика конфиденциальности описывает, как приложение AvtoMAN ("мы", "нас" или "наше") собирает, использует и защищает информацию пользователей при использовании нашего мобильного приложения для учета обслуживания автомобилей.',
             ),
 
             _buildPolicySection(
@@ -135,7 +136,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             _buildPolicySection(
               '10. Контакты',
               'Если у вас есть вопросы по поводу данной Политики конфиденциальности, свяжитесь с нами:\n\n'
-                  'Email: privacy@servicebook.ru\n'
+                  'Email: privacy@avtoman.ru\n'
                   'Телефон: 8-800-123-45-67\n'
                   'Адрес: г. Москва, ул. Автомобильная, 1',
             ),

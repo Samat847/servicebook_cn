@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../widgets/background_scaffold.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -41,10 +42,9 @@ class _AboutScreenState extends State<AboutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+    return BackgroundScaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withOpacity(0.9),
         foregroundColor: Colors.black,
         elevation: 0.5,
         title: const Text(
@@ -88,7 +88,7 @@ class _AboutScreenState extends State<AboutScreen> {
 
             // App name
             const Text(
-              'ServiceBook',
+              'AvtoMAN',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -129,13 +129,13 @@ class _AboutScreenState extends State<AboutScreen> {
                     icon: Icons.description,
                     title: 'Описание',
                     content:
-                        'ServiceBook — это удобное приложение для ведения истории обслуживания автомобилей. Сохраняйте записи о ТО, отслеживайте расходы, храните документы и получайте напоминания о предстоящих работах.',
+                        'AvtoMAN — это удобное приложение для ведения истории обслуживания автомобилей. Сохраняйте записи о ТО, отслеживайте расходы, храните документы и получайте напоминания о предстоящих работах.',
                   ),
                   const SizedBox(height: 12),
                   _buildInfoCard(
                     icon: Icons.code,
                     title: 'Разработчик',
-                    content: 'ServiceBook Team\n© 2024 Все права защищены',
+                    content: 'AvtoMAN Team\n© 2024 Все права защищены',
                   ),
                   const SizedBox(height: 12),
                   _buildInfoCard(
