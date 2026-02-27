@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../widgets/background_scaffold.dart';
 import '../models/models.dart';
 import '../services/car_storage.dart';
 import '../l10n/app_localizations.dart';
@@ -579,7 +578,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body = _buildCarsList();
     }
 
-    return BackgroundScaffold(
+    return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: cardColor,

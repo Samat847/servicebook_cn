@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/background_scaffold.dart';
 import 'dart:async';
 import 'profile_screen.dart';
 import '../services/car_storage.dart';
@@ -177,7 +176,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     
-    return BackgroundScaffold(
+    return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),

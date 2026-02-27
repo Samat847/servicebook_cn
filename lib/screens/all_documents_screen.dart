@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/background_scaffold.dart';
 import 'driver_license_screen.dart';
 import 'insurance_screen.dart';
 import 'documents_screen.dart';
@@ -263,7 +262,7 @@ class _AllDocumentsScreenState extends State<AllDocumentsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BackgroundScaffold(
+    return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,
