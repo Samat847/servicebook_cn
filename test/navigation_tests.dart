@@ -27,7 +27,7 @@ import 'package:servicebook_cn/screens/terms_of_service_screen.dart';
 import 'package:servicebook_cn/screens/about_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Comprehensive navigation and widget tests for ServiceBook CN app
+/// Comprehensive navigation and widget tests for AvtoMAN CN app
 /// 
 /// These tests cover:
 /// - Main screen navigation with bottom tabs

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/background_scaffold.dart';
 import '../services/auth_service.dart';
 import '../l10n/app_localizations.dart';
 import 'profile_screen.dart';
@@ -154,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final l10n = AppLocalizations.of(context);
     final isRegistration = widget.isRegistration;
     
-    return Scaffold(
+    return BackgroundScaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,

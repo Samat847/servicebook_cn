@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "servicebook_cn" "\0"
+            VALUE "FileDescription", "AvtoMAN" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "servicebook_cn" "\0"
+            VALUE "InternalName", "AvtoMAN" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2025 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "servicebook_cn.exe" "\0"
-            VALUE "ProductName", "servicebook_cn" "\0"
+            VALUE "OriginalFilename", "AvtoMAN.exe" "\0"
+            VALUE "ProductName", "AvtoMAN" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

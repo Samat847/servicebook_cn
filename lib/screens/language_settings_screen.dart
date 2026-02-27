@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/background_scaffold.dart';
 import 'package:provider/provider.dart';
 import '../providers/locale_provider.dart';
 import '../l10n/app_localizations.dart';
@@ -79,7 +80,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
     final localeProvider = context.watch<LocaleProvider>();
     final selectedCode = localeProvider.locale.languageCode;
 
-    return Scaffold(
+    return BackgroundScaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,

@@ -1,6 +1,6 @@
 {
-    "name": "servicebook_cn",
-    "short_name": "servicebook_cn",
+    "name": "AvtoMAN",
+    "short_name": "AvtoMAN",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

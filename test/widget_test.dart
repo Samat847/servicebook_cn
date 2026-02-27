@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:servicebook_cn/main.dart';
 
 void main() {
-  group('ServiceBook App Widget Tests', () {
+  group('AvtoMAN App Widget Tests', () {
     testWidgets('MyApp builds correctly with unauthenticated state',
         (WidgetTester tester) async {
       await tester.pumpWidget(const MyApp(
