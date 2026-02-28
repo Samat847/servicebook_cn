@@ -31,7 +31,7 @@ android {
     defaultConfig {
         applicationId = "kz.samat.avtoman"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 2
         versionName = "1.0.1"
     }
@@ -84,4 +84,18 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+}
+
+configurations.all {
+    resolutionStrategy {
+        force("androidx.core:core:1.13.1")
+        force("androidx.core:core-ktx:1.13.1")
+        force("androidx.activity:activity:1.9.0")
+        force("androidx.activity:activity-ktx:1.9.0")
+        force("androidx.browser:browser:1.8.0")
+        force("androidx.media3:media3-exoplayer:1.3.1")
+        force("androidx.media3:media3-session:1.3.1")
+        force("androidx.lifecycle:lifecycle-runtime:2.8.0")
+        force("androidx.lifecycle:lifecycle-common:2.8.0")
+    }
 }
