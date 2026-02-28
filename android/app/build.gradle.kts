@@ -15,7 +15,7 @@ if (keyPropertiesFile.exists()) {
 
 android {
     namespace = "kz.samat.avtoman"
-    compileSdk = 34
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
