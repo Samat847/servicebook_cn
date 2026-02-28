@@ -27,9 +27,17 @@
 - `usesCleartextTraffic="false"` - запрещает нешифрованный HTTP трафик
 - Backup rules настроены для сохранения пользовательских данных
 
+### 6. Signing Config (Подпись APK)
+Signing config поддерживает три источника (в порядке приоритета):
+1. **Переменные окружения** (`KEYSTORE_PATH`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`)
+2. **Файл** `android/key.properties`
+3. **Debug подпись** (автоматически, если keystore не настроен)
+
 ## Сборка Release APK
 
 ### Вариант 1: Сборка с debug подписью (для тестирования)
+
+Если keystore не настроен, сборка автоматически использует debug подпись:
 
 ```bash
 flutter clean
@@ -40,7 +48,7 @@ flutter build apk --release
 APK будет подписан debug ключом и сохранён в:
 `build/app/outputs/flutter-apk/app-release.apk`
 
-### Вариант 2: Сборка с собственным keystore (для публикации)
+### Вариант 2: Сборка с key.properties (локальная разработка)
 
 #### Шаг 1: Создать keystore (один раз)
 
@@ -54,7 +62,28 @@ keytool -genkey -v -keystore keystore.jks -keyalg RSA -keysize 2048 -validity 10
 - Информацию о владельце (имя, организация и т.д.)
 - Пароль для ключа (можно использовать тот же)
 
-#### Шаг 2: Настроить переменные окружения
+#### Шаг 2: Создать файл `android/key.properties`
+
+```properties
+storePassword=your_keystore_password
+keyPassword=your_key_password
+keyAlias=upload
+storeFile=../app/keystore.jks
+```
+
+**Важно**: файл `key.properties` добавлен в `.gitignore` и не должен попадать в git!
+
+#### Шаг 3: Собрать APK
+
+```bash
+flutter clean
+flutter pub get
+flutter build apk --release
+```
+
+### Вариант 3: Сборка через переменные окружения (CI/CD)
+
+#### Настроить переменные окружения
 
 **Linux/macOS:**
 ```bash
@@ -72,26 +101,12 @@ $env:KEY_ALIAS="upload"
 $env:KEY_PASSWORD="your_key_password"
 ```
 
-#### Шаг 3: Собрать APK
-
+Затем запустить:
 ```bash
 flutter clean
 flutter pub get
 flutter build apk --release
 ```
-
-### Вариант 3: Использование key.properties (локальная разработка)
-
-Создайте файл `android/key.properties`:
-
-```properties
-storePassword=your_keystore_password
-keyPassword=your_key_password
-keyAlias=upload
-storeFile=../app/keystore.jks
-```
-
-**Важно**: файл `key.properties` добавлен в `.gitignore` и не должен попадать в git!
 
 ## Проверка подписи APK
 
@@ -130,13 +145,13 @@ AAB будет сохранён в:
 ## Устранение неполадок
 
 ### Ошибка: "Could not find keystore file"
-Убедитесь, что переменная `KEYSTORE_PATH` указывает на правильный путь относительно папки `android/app/`.
+Убедитесь, что путь `storeFile` в `key.properties` (или `KEYSTORE_PATH`) указывает на правильный файл относительно папки `android/app/`.
 
 ### Ошибка: "Keystore was tampered with"
-Неверный пароль keystore. Проверьте переменную `KEYSTORE_PASSWORD`.
+Неверный пароль keystore. Проверьте `storePassword` в `key.properties` (или `KEYSTORE_PASSWORD`).
 
 ### Ошибка: "Cannot recover key"
-Неверный пароль ключа. Проверьте переменную `KEY_PASSWORD`.
+Неверный пароль ключа. Проверьте `keyPassword` в `key.properties` (или `KEY_PASSWORD`).
 
 ### Ошибка: "Entry was not found"
-Неверный alias ключа. Проверьте переменную `KEY_ALIAS`.
+Неверный alias ключа. Проверьте `keyAlias` в `key.properties` (или `KEY_ALIAS`).
