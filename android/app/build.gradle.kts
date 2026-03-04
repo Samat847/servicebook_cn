@@ -15,8 +15,8 @@ if (keyPropertiesFile.exists()) {
 
 android {
     namespace = "kz.samat.avtoman"
-    compileSdk = 36
-    ndkVersion = flutter.ndkVersion
+    compileSdk = 35
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -87,5 +87,4 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.21")
 }
