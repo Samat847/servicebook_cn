@@ -25,7 +25,10 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+        jvmTarget = "17"
+        freeCompilerArgs += listOf(
+            "-Xjvm-default=all"
+        )
     }
 
     defaultConfig {
@@ -85,18 +88,4 @@ flutter {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.0")
-}
-
-configurations.all {
-    resolutionStrategy {
-        force("androidx.core:core:1.15.0")
-        force("androidx.core:core-ktx:1.15.0")
-        force("androidx.activity:activity:1.10.1")
-        force("androidx.activity:activity-ktx:1.10.1")
-        force("androidx.browser:browser:1.8.0")
-        force("androidx.media3:media3-exoplayer:1.6.0")
-        force("androidx.media3:media3-session:1.6.0")
-        force("androidx.lifecycle:lifecycle-runtime:2.8.7")
-        force("androidx.lifecycle:lifecycle-common:2.8.7")
-    }
 }
