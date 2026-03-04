@@ -67,8 +67,6 @@ class NotificationService {
           iOS: DarwinNotificationDetails(),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.dateAndTime,
       );
       debugPrint('[NotificationService] Scheduled service reminder for $carName');
@@ -101,8 +99,6 @@ class NotificationService {
                 iOS: DarwinNotificationDetails(),
               ),
               androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-              uiLocalNotificationDateInterpretation:
-                  UILocalNotificationDateInterpretation.absoluteTime,
     );
     debugPrint('[NotificationService] Scheduled mileage reminder for $carName');
   }
