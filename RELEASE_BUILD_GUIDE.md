@@ -10,24 +10,37 @@
 
 ### 2. SDK настройки
 - **minSdk**: 24 (Android 7.0+) - обеспечивает совместимость с geolocator и современными библиотеками
-- **targetSdk**: 34 (Android 14) - требуется для публикации в Google Play с августа 2024
-- **compileSdk**: 34
+- **targetSdk**: 35 (Android 15) - требуется для публикации в Google Play с августа 2025
+- **compileSdk**: 35
 
-### 3. Версия приложения
+### 3. Обновление Kotlin и Android Gradle Plugin
+Для совместимости с SDK 35 и плагинами file_picker и package_info_plus выполнено обновление:
+- **Android Gradle Plugin (AGP)**: 8.4.2
+- **Kotlin**: 2.0.21
+- **Gradle**: 8.8
+
+Эти версии полностью совместимы и обеспечивают стабильную сборку.
+
+### 4. Версия приложения
 - **versionCode**: 2
 - **versionName**: 1.0.1
 
-### 4. Оптимизации сборки
+### 5. Оптимизации сборки
 - **Code shrinking** (minifyEnabled): включено
 - **Resource shrinking** (shrinkResources): включено
 - **ProGuard rules**: создан `android/app/proguard-rules.pro` с правилами для Flutter и плагинов
 - **Native library extraction**: включено для уменьшения размера APK
 
-### 5. Безопасность
+### 6. Обновлённые зависимости плагинов
+Для совместимости с Kotlin 2.0.21 обновлены следующие плагины:
+- **file_picker**: 10.1.8 (было 8.0.7) - полная поддержка Kotlin 2.x
+- **package_info_plus**: 8.3.1 (было 8.0.0)
+
+### 7. Безопасность
 - `usesCleartextTraffic="false"` - запрещает нешифрованный HTTP трафик
 - Backup rules настроены для сохранения пользовательских данных
 
-### 6. Signing Config (Подпись APK)
+### 8. Signing Config (Подпись APK)
 Signing config поддерживает три источника (в порядке приоритета):
 1. **Переменные окружения** (`KEYSTORE_PATH`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`)
 2. **Файл** `android/key.properties`
@@ -143,6 +156,30 @@ AAB будет сохранён в:
 5. **Резервное копирование**: Настроено автоматическое резервное копирование SharedPreferences (кроме FlutterSharedPreferences).
 
 ## Устранение неполадок
+
+### Ошибки компиляции Kotlin в плагинах (file_picker, package_info_plus)
+
+Если при сборке возникают ошибки компиляции Kotlin, проверьте:
+
+1. **Версии должны соответствовать матрице совместимости:**
+   - AGP 8.4.2 + Kotlin 2.0.21 + Gradle 8.8
+   - compileSdk/targetSdk: 35
+   - minSdk: 24
+
+2. **Очистка кэшей после обновления версий:**
+   ```bash
+   flutter clean
+   rm -rf android/.gradle
+   rm -rf android/app/build
+   cd android && ./gradlew clean && cd ..
+   flutter pub get
+   flutter build apk --release
+   ```
+
+3. **Если ошибки сохраняются**, удалите глобальный кэш Gradle:
+   ```bash
+   rm -rf ~/.gradle/caches
+   ```
 
 ### Ошибка: "Could not find keystore file"
 Убедитесь, что путь `storeFile` в `key.properties` (или `KEYSTORE_PATH`) указывает на правильный файл относительно папки `android/app/`.
