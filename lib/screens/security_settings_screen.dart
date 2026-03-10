@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../l10n/app_localizations.dart';
 import 'auth_screen.dart';
+import '../widgets/background_scaffold.dart';
 
 class SecuritySettingsScreen extends StatefulWidget {
   const SecuritySettingsScreen({super.key});
@@ -167,7 +168,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     
-    return Scaffold(
+    return BackgroundScaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,

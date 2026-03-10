@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../models/models.dart';
 import '../services/car_storage.dart';
 import '../services/notification_service.dart';
+import '../widgets/background_scaffold.dart';
 
 class AddServiceScreen extends StatefulWidget {
   final Car car;
@@ -228,7 +229,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BackgroundScaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,

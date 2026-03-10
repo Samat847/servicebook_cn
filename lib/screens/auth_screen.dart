@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'verification_screen.dart';
 import 'login_screen.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/background_scaffold.dart';
 
 class _PhoneMaskFormatter extends TextInputFormatter {
   @override
@@ -98,7 +99,7 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return Scaffold(
+    return BackgroundScaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(

@@ -4,6 +4,7 @@ import '../models/models.dart';
 import '../services/car_storage.dart';
 import 'expense_detail_analytics_screen.dart';
 import 'all_operations_screen.dart';
+import '../widgets/background_scaffold.dart';
 
 class ExpenseAnalyticsScreen extends StatefulWidget {
   final Car car;
@@ -112,7 +113,7 @@ class _ExpenseAnalyticsScreenState extends State<ExpenseAnalyticsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BackgroundScaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,

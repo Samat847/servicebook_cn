@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../widgets/background_scaffold.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -41,10 +42,9 @@ class _AboutScreenState extends State<AboutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+    return BackgroundScaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withOpacity(0.9),
         foregroundColor: Colors.black,
         elevation: 0.5,
         title: const Text(

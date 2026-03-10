@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import '../widgets/background_scaffold.dart';
 
 class TermsOfServiceScreen extends StatelessWidget {
   const TermsOfServiceScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BackgroundScaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -153,7 +154,7 @@ class TermsOfServiceScreen extends StatelessWidget {
             _buildTermsSection(
               '12. Контакты',
               'Если у вас есть вопросы по поводу данных Условий использования, свяжитесь с нами:\n\n'
-                  'Email: legal@servicebook.ru\n'
+                  'Email: legal@avtoman.ru\n'
                   'Телефон: 8-800-123-45-67\n'
                   'Адрес: г. Москва, ул. Автомобильная, 1',
             ),
